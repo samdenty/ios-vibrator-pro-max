@@ -17,7 +17,7 @@
     "prepublishOnly": "pnpm build"
   },
   "keywords": [],
-  "author": "",
+  "author": "Sam Denty <samddenty@gmail.com> (http://samdenty.com/)",
   "license": "ISC",
   "devDependencies": {
     "typescript": "^5.7.3"
