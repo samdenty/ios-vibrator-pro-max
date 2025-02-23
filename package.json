@@ -1,6 +1,6 @@
 {
   "name": "ios-vibrator-pro-max",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Bringing the vibes back to iOS safari...",
   "type": "module",
   "files": [
@@ -13,6 +13,7 @@
     "url": "https://github.com/samdenty/ios-vibrator-pro-max.git"
   },
   "scripts": {
+    "dev": "vite --host",
     "build": "rm -rf dist; tsc -b",
     "prepublishOnly": "pnpm build"
   },
@@ -20,6 +21,8 @@
   "author": "Sam Denty <samddenty@gmail.com> (http://samdenty.com/)",
   "license": "ISC",
   "devDependencies": {
-    "typescript": "^5.7.3"
-  }
+    "typescript": "^5.7.3",
+    "vite": "^6.1.1"
+  },
+  "dependencies": {}
 }

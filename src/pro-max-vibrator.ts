@@ -1,5 +1,7 @@
 // Sorry Tim Cook, PWAs deserve some love too...
 
+const MAGIC_NUMBER = 26.26;
+
 let proMaxVibrator: any;
 
 function teachSafariHowToVibe(
@@ -35,7 +37,7 @@ function teachSafariHowToVibe(
 
         label.click();
 
-        proMaxVibrator = setTimeout(vibrate, 30);
+        proMaxVibrator = setTimeout(vibrate, MAGIC_NUMBER);
       }
 
       vibrate();
