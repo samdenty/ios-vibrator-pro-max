@@ -1,7 +1,8 @@
 {
   "name": "ios-vibrator-pro-max",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Bringing the vibes back to iOS safari...",
+  "homepage": "https://ios-vibrate-api-demo.vercel.app/",
   "type": "module",
   "files": [
     "dist"
