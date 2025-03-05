@@ -20,10 +20,12 @@ document.body.addEventListener("click", () => {
     return;
   }
 
+  clearTimeout(grant);
+
   allowVibrationsDuringGrant();
 
   setTimeout(() => {
-    clearTimeout(grant);
+    // in older iOS versions, there was no such thing as a grant...
     grant = undefined;
   }, 1000);
 });
