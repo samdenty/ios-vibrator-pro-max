@@ -13,7 +13,9 @@ navigator.vibrate(1000);
 This will block the main thread for the duration of the vibration pattern.
 
 ```ts
-import "ios-vibrator-pro-max";
+import { enableMainThreadBlocking } from "ios-vibrator-pro-max";
 
-navigator.vibrate(2000, true);
+enableMainThreadBlocking(true);
+
+navigator.vibrate(2000);
 ```

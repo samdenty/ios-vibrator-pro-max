@@ -2,31 +2,49 @@
 
 const MAGIC_NUMBER = 26.26;
 
-let proMaxVibrator: any;
+let waiter: any;
+let grant: any;
+let vibrateDuringGrant = false;
+
+const label = document.createElement("label");
+label.ariaHidden = "true";
+label.style.display = "none";
+
+const input = document.createElement("input");
+input.type = "checkbox";
+input.setAttribute("switch", "");
+label.appendChild(input);
+
+document.body.addEventListener("click", () => {
+  if (grant) {
+    return;
+  }
+
+  allowVibrationsDuringGrant();
+
+  setTimeout(() => {
+    clearTimeout(grant);
+    grant = undefined;
+  }, 1000);
+});
+
+let blockMainThread = false;
+
+export function enableMainThreadBlocking(enabled: boolean) {
+  blockMainThread = enabled;
+}
 
 function teachSafariHowToVibe(
   rawPatterns: Iterable<number> | VibratePattern,
-  allowMainThreadBlocking = false
+  allowMainThreadBlocking = blockMainThread
 ): boolean {
   const patterns =
     typeof rawPatterns === "number" ? [rawPatterns] : [...rawPatterns];
 
-  if (patterns.some((pattern) => typeof pattern !== "number")) {
-    return false;
-  }
-
-  const label = document.createElement("label");
-  label.ariaHidden = "true";
-  label.style.display = "none";
-
-  const input = document.createElement("input");
-  input.type = "checkbox";
-  input.setAttribute("switch", "");
-  label.appendChild(input);
-
-  document.body.appendChild(label);
-
-  if (!patterns.length) {
+  if (
+    !patterns.length ||
+    patterns.some((pattern) => typeof pattern !== "number")
+  ) {
     return false;
   }
 
@@ -34,27 +52,12 @@ function teachSafariHowToVibe(
     return acc + pattern;
   }, 0);
 
-  const timeout =
-    allowMainThreadBlocking && totalTime > 1000 ? blockForMs : waitForMs;
+  const block = allowMainThreadBlocking && totalTime > 1000;
 
-  function vibratePolyfill(time: number) {
-    const endTime = Date.now() + time;
+  const timeout = block ? blockForMs : waitForMs;
+  const vibrate = block ? blockingVibrate : grantedVibrate;
 
-    async function vibrate(adjustment = 0): Promise<boolean> {
-      const time = MAGIC_NUMBER - adjustment;
-      const startTime = Date.now();
-
-      label.click();
-
-      const complete = await timeout(time, endTime);
-
-      return complete || vibrate(Date.now() - startTime - Math.floor(time));
-    }
-
-    return vibrate();
-  }
-
-  clearTimeout(proMaxVibrator);
+  clearTimeout(waiter);
 
   async function next(index: number, adjustment = 0) {
     const time = patterns[index] - adjustment;
@@ -63,7 +66,7 @@ function teachSafariHowToVibe(
     if (index % 2) {
       await timeout(time);
     } else {
-      await vibratePolyfill(time);
+      await vibrate(time);
     }
 
     if (index === patterns.length - 1) {
@@ -101,10 +104,55 @@ function blockForMs(ms: number, endTime?: number) {
   return !endTime || Date.now() >= endTime;
 }
 
-function waitForMs(ms: number, endTime?: number) {
-  return new Promise<boolean>((resolve) => {
-    proMaxVibrator = setTimeout(() => {
-      resolve(!endTime || Date.now() >= endTime);
-    }, ms);
+async function grantedVibrate(time: number) {
+  vibrateDuringGrant = true;
+  await waitForMs(time);
+  vibrateDuringGrant = false;
+}
+
+async function allowVibrationsDuringGrant(adjustment = 0): Promise<boolean> {
+  const time = MAGIC_NUMBER - adjustment;
+  const startTime = Date.now();
+
+  if (vibrateDuringGrant) {
+    label.click();
+  }
+
+  await new Promise<void>((resolve) => {
+    grant = setTimeout(resolve, time);
   });
+
+  return allowVibrationsDuringGrant(Date.now() - startTime - time);
+}
+
+function blockingVibrate(time: number) {
+  const endTime = Date.now() + time;
+
+  function vibrate(adjustment = 0): boolean {
+    const time = MAGIC_NUMBER - adjustment;
+    const startTime = Date.now();
+
+    label.click();
+
+    const complete = blockForMs(time, endTime);
+
+    return complete || vibrate(Date.now() - startTime - Math.floor(time));
+  }
+
+  return vibrate();
+}
+
+function waitForMs(ms: number) {
+  return new Promise<void>((resolve) => {
+    waiter = setTimeout(resolve, ms);
+  });
+}
+
+// head so we don't trigger body clicks
+if (document.head) {
+  document.head.appendChild(label);
+} else {
+  setTimeout(() => {
+    document.head.appendChild(label);
+  }, 0);
 }
