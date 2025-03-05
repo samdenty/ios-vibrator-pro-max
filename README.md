@@ -5,5 +5,15 @@ Finally Safari added an unofficial™️ vibration API. I'm sorry to whoever who
 ```ts
 import "ios-vibrator-pro-max";
 
-navigator.vibrate(2000);
+navigator.vibrate(1000);
+```
+
+## Durations longer than 1000ms
+
+This will block the main thread for the duration of the vibration pattern.
+
+```ts
+import "ios-vibrator-pro-max";
+
+navigator.vibrate(2000, true);
 ```

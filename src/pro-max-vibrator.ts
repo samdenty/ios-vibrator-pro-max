@@ -5,7 +5,8 @@ const MAGIC_NUMBER = 26.26;
 let proMaxVibrator: any;
 
 function teachSafariHowToVibe(
-  rawPatterns: Iterable<number> | VibratePattern
+  rawPatterns: Iterable<number> | VibratePattern,
+  allowMainThreadBlocking = false
 ): boolean {
   const patterns =
     typeof rawPatterns === "number" ? [rawPatterns] : [...rawPatterns];
@@ -25,27 +26,32 @@ function teachSafariHowToVibe(
 
   document.body.appendChild(label);
 
+  if (!patterns.length) {
+    return false;
+  }
+
+  const totalTime = patterns.reduce((acc, pattern) => {
+    return acc + pattern;
+  }, 0);
+
+  const timeout =
+    allowMainThreadBlocking && totalTime > 1000 ? blockForMs : waitForMs;
+
   function vibratePolyfill(time: number) {
     const endTime = Date.now() + time;
 
-    return new Promise<void>((resolve) => {
-      function vibrate() {
-        if (endTime <= Date.now()) {
-          resolve();
-          return;
-        }
+    async function vibrate(adjustment = 0): Promise<boolean> {
+      const time = MAGIC_NUMBER - adjustment;
+      const startTime = Date.now();
 
-        label.click();
+      label.click();
 
-        proMaxVibrator = setTimeout(vibrate, MAGIC_NUMBER);
-      }
+      const complete = await timeout(time, endTime);
 
-      vibrate();
-    });
-  }
+      return complete || vibrate(Date.now() - startTime - Math.floor(time));
+    }
 
-  if (!patterns.length) {
-    return false;
+    return vibrate();
   }
 
   clearTimeout(proMaxVibrator);
@@ -55,9 +61,7 @@ function teachSafariHowToVibe(
     const startTime = Date.now();
 
     if (index % 2) {
-      await new Promise((resolve) => {
-        proMaxVibrator = setTimeout(resolve, time);
-      });
+      await timeout(time);
     } else {
       await vibratePolyfill(time);
     }
@@ -67,7 +71,7 @@ function teachSafariHowToVibe(
       return;
     }
 
-    next(index + 1, Date.now() - startTime - time);
+    return next(index + 1, Date.now() - startTime - time);
   }
 
   next(0);
@@ -77,4 +81,30 @@ function teachSafariHowToVibe(
 
 if (typeof navigator !== "undefined" && !navigator.vibrate) {
   navigator.vibrate = teachSafariHowToVibe;
+}
+
+function blockForMs(ms: number, endTime?: number) {
+  if (ms < 0) {
+    ms = 0;
+  }
+
+  const date = Date.now();
+
+  while (Date.now() - date < ms) {
+    if (endTime && Date.now() >= endTime) {
+      break;
+    }
+
+    // Block the main thread
+  }
+
+  return !endTime || Date.now() >= endTime;
+}
+
+function waitForMs(ms: number, endTime?: number) {
+  return new Promise<boolean>((resolve) => {
+    proMaxVibrator = setTimeout(() => {
+      resolve(!endTime || Date.now() >= endTime);
+    }, ms);
+  });
 }
