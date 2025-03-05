@@ -71,12 +71,9 @@ function teachSafariHowToVibe(
       await vibrate(time);
     }
 
-    if (index === patterns.length - 1) {
-      label.remove();
-      return;
+    if (index !== patterns.length - 1) {
+      return next(index + 1, Date.now() - startTime - time);
     }
-
-    return next(index + 1, Date.now() - startTime - time);
   }
 
   next(0);
