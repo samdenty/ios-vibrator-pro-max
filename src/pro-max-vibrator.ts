@@ -4,32 +4,8 @@ const MAGIC_NUMBER = 26.26;
 
 let waiter: any;
 let grant: any;
+let trigger: HTMLLabelElement;
 let vibrateDuringGrant = false;
-
-const label = document.createElement("label");
-label.ariaHidden = "true";
-label.style.display = "none";
-
-const input = document.createElement("input");
-input.type = "checkbox";
-input.setAttribute("switch", "");
-label.appendChild(input);
-
-document.body.addEventListener("click", () => {
-  if (grant) {
-    return;
-  }
-
-  clearTimeout(grant);
-
-  allowVibrationsDuringGrant();
-
-  setTimeout(() => {
-    // in older iOS versions, there was no such thing as a grant...
-    grant = undefined;
-  }, 1000);
-});
-
 let blockMainThread = false;
 
 export function enableMainThreadBlocking(enabled: boolean) {
@@ -81,10 +57,6 @@ function teachSafariHowToVibe(
   return true;
 }
 
-if (typeof navigator !== "undefined" && !navigator.vibrate) {
-  navigator.vibrate = teachSafariHowToVibe;
-}
-
 function blockForMs(ms: number, endTime?: number) {
   if (ms < 0) {
     ms = 0;
@@ -114,7 +86,7 @@ async function allowVibrationsDuringGrant(adjustment = 0): Promise<boolean> {
   const startTime = Date.now();
 
   if (vibrateDuringGrant) {
-    label.click();
+    trigger.click();
   }
 
   await new Promise<void>((resolve) => {
@@ -131,7 +103,7 @@ function blockingVibrate(time: number) {
     const time = MAGIC_NUMBER - adjustment;
     const startTime = Date.now();
 
-    label.click();
+    trigger.click();
 
     const complete = blockForMs(time, endTime);
 
@@ -147,11 +119,44 @@ function waitForMs(ms: number) {
   });
 }
 
-// head so we don't trigger body clicks
-if (document.head) {
-  document.head.appendChild(label);
-} else {
-  setTimeout(() => {
-    document.head.appendChild(label);
-  }, 0);
+if (
+  typeof window !== "undefined" &&
+  typeof document !== "undefined" &&
+  typeof navigator !== "undefined" &&
+  !navigator.vibrate
+) {
+  navigator.vibrate = teachSafariHowToVibe;
+
+  trigger = document.createElement("label");
+  trigger.ariaHidden = "true";
+  trigger.style.display = "none";
+
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.setAttribute("switch", "");
+  trigger.appendChild(input);
+
+  document.body.addEventListener("click", () => {
+    if (grant) {
+      return;
+    }
+
+    clearTimeout(grant);
+
+    allowVibrationsDuringGrant();
+
+    setTimeout(() => {
+      // in older iOS versions, there was no such thing as a grant...
+      grant = undefined;
+    }, 1000);
+  });
+
+  // head so we don't trigger body clicks
+  if (document.head) {
+    document.head.appendChild(trigger);
+  } else {
+    setTimeout(() => {
+      document.head.appendChild(trigger);
+    }, 0);
+  }
 }
