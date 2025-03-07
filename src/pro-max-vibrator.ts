@@ -3,7 +3,7 @@
 const MAGIC_NUMBER = 26.26;
 
 let waiter: any;
-let grant: any;
+let grant: any | null;
 let trigger: HTMLLabelElement;
 let vibrateDuringGrant = false;
 let blockMainThread = false;
@@ -90,7 +90,11 @@ async function allowVibrationsDuringGrant(adjustment = 0): Promise<boolean> {
   }
 
   await new Promise<void>((resolve) => {
-    grant = setTimeout(resolve, time);
+    const timer = setTimeout(resolve, time);
+
+    if (grant !== null) {
+      grant = timer;
+    }
   });
 
   return allowVibrationsDuringGrant(Date.now() - startTime - time);
@@ -147,7 +151,7 @@ if (
 
     setTimeout(() => {
       // in older iOS versions, there was no such thing as a grant...
-      grant = undefined;
+      grant = null;
     }, 1000);
   });
 
