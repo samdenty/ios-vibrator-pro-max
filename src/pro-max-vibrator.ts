@@ -52,7 +52,16 @@ function teachSafariHowToVibe(
     }
   }
 
-  setTimeout(() => next(0), 0);
+  if (block) {
+    // Don't do anything until the next frame has been rendered
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        next(0);
+      });
+    });
+  } else {
+    next(0);
+  }
 
   return true;
 }
