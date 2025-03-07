@@ -140,7 +140,7 @@ if (
   input.setAttribute("switch", "");
   trigger.appendChild(input);
 
-  document.body.addEventListener("click", () => {
+  function authorizeVibrations() {
     if (grant) {
       return;
     }
@@ -153,7 +153,10 @@ if (
       // in older iOS versions, there was no such thing as a grant...
       grant = null;
     }, 1000);
-  });
+  }
+
+  document.body.addEventListener("click", authorizeVibrations);
+  document.body.addEventListener("keypress", authorizeVibrations);
 
   // head so we don't trigger body clicks
   if (document.head) {
