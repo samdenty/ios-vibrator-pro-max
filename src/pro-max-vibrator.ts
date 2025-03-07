@@ -52,7 +52,7 @@ function teachSafariHowToVibe(
     }
   }
 
-  next(0);
+  setTimeout(() => next(0), 0);
 
   return true;
 }
