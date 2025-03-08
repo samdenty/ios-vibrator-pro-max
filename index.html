@@ -1,10 +1,10 @@
 <script type="module">
-  import "./src";
-  navigator.vibrate(1000000);
+  import { enableMainThreadBlocking } from "./src";
+
+  enableMainThreadBlocking(true);
 </script>
 
-Click anywhere to grant vibration for the onload trigger vibration. Click again
-to grant, or click button below to start fresh
-
-<input value="Try typing" />
-<button onclick="navigator.vibrate(500)">Click me</button>
+<input value="Try typing" oninput="navigator.vibrate(100)" />
+<button onclick="navigator.vibrate([500, 500, 500, 500, 500, 500, 500])">
+  Click me
+</button>

@@ -1,11 +1,24 @@
 // Sorry Tim Cook, PWAs deserve some love too...
 
-const MAGIC_NUMBER = 26.26;
+import { mergeVibrations, type Vibration } from "./mergeVibrations.js";
 
-let waiter: any;
-let grant: any | null;
+const SAFARI_VERSION = getSafariVersion();
+const MAGIC_NUMBER = 26.26;
+const GRANT_TIMEOUT = 1000;
+
+const polyfillKind =
+  !navigator.vibrate && SAFARI_VERSION
+    ? SAFARI_VERSION >= 18.4
+      ? "granted"
+      : SAFARI_VERSION >= 18
+      ? "full"
+      : null
+    : null;
+
 let trigger: HTMLLabelElement;
-let vibrateDuringGrant = false;
+let timer: any;
+let lastGrant: number | null = null;
+let vibration: Vibration = [Date.now(), []];
 let blockMainThread = false;
 
 export function enableMainThreadBlocking(enabled: boolean) {
@@ -13,8 +26,7 @@ export function enableMainThreadBlocking(enabled: boolean) {
 }
 
 function teachSafariHowToVibe(
-  rawPatterns: Iterable<number> | VibratePattern,
-  allowMainThreadBlocking = blockMainThread
+  rawPatterns: Iterable<number> | VibratePattern
 ): boolean {
   const patterns =
     typeof rawPatterns === "number" ? [rawPatterns] : [...rawPatterns];
@@ -26,109 +38,83 @@ function teachSafariHowToVibe(
     return false;
   }
 
-  const totalTime = patterns.reduce((acc, pattern) => {
-    return acc + pattern;
-  }, 0);
-
-  const block = allowMainThreadBlocking && totalTime > 1000;
-
-  const timeout = block ? blockForMs : waitForMs;
-  const vibrate = block ? blockingVibrate : grantedVibrate;
-
-  clearTimeout(waiter);
-
-  async function next(index: number, adjustment = 0) {
-    const time = patterns[index] - adjustment;
-    const startTime = Date.now();
-
-    if (index % 2) {
-      await timeout(time);
-    } else {
-      await vibrate(time);
-    }
-
-    if (index !== patterns.length - 1) {
-      return next(index + 1, Date.now() - startTime - time);
-    }
-  }
-
-  if (block) {
-    // Don't do anything until the next frame has been rendered
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        next(0);
-      });
-    });
-  } else {
-    next(0);
-  }
+  vibration = [Date.now(), patterns];
 
   return true;
 }
 
-function blockForMs(ms: number, endTime?: number) {
-  if (ms < 0) {
-    ms = 0;
-  }
+async function grantedVibrate() {
+  lastGrant = Date.now();
 
-  const date = Date.now();
+  while (true) {
+    vibration = [Date.now(), mergeVibrations([Date.now(), []], vibration)];
 
-  while (Date.now() - date < ms) {
-    if (endTime && Date.now() >= endTime) {
-      break;
+    const [vibrateMs, waitMs] = vibration[1] as (number | undefined)[];
+
+    if (vibrateMs == null) {
+      if (!getTimeUntilGrantExpires()) {
+        return;
+      }
+
+      await asyncWait(1);
+
+      continue;
     }
 
-    // Block the main thread
+    const vibrate = vibrateMs > 0;
+    const waitTime = vibrate ? MAGIC_NUMBER : waitMs ?? 0;
+
+    if (vibrate) {
+      trigger.click();
+    }
+
+    await wait(waitTime);
+  }
+}
+
+function getTimeUntilGrantExpires(): number {
+  if (polyfillKind === "full") {
+    return Infinity;
   }
 
-  return !endTime || Date.now() >= endTime;
+  if (!lastGrant) {
+    return 0;
+  }
+
+  return Math.max(0, GRANT_TIMEOUT - (Date.now() - lastGrant));
 }
 
-async function grantedVibrate(time: number) {
-  vibrateDuringGrant = true;
-  await waitForMs(time);
-  vibrateDuringGrant = false;
+async function wait(duration: number) {
+  if (!blockMainThread) {
+    return asyncWait(duration);
+  }
+
+  const timeUntilGrantExpires = getTimeUntilGrantExpires();
+  const start = Date.now();
+
+  if (timeUntilGrantExpires > 150) {
+    await asyncWait(Math.min(duration, timeUntilGrantExpires - 150));
+  }
+
+  blockingWait(duration - (Date.now() - start));
 }
 
-async function allowVibrationsDuringGrant(adjustment = 0): Promise<boolean> {
-  const time = MAGIC_NUMBER - adjustment;
+function blockingWait(ms: number, endTime?: number) {
+  if (ms < 0) {
+    return;
+  }
+
   const startTime = Date.now();
 
-  if (vibrateDuringGrant) {
-    trigger.click();
+  while (Date.now() - startTime < ms) {
+    if (endTime && Date.now() >= endTime) break;
   }
-
-  await new Promise<void>((resolve) => {
-    const timer = setTimeout(resolve, time);
-
-    if (grant !== null) {
-      grant = timer;
-    }
-  });
-
-  return allowVibrationsDuringGrant(Date.now() - startTime - time);
 }
 
-function blockingVibrate(time: number) {
-  const endTime = Date.now() + time;
-
-  function vibrate(adjustment = 0): boolean {
-    const time = MAGIC_NUMBER - adjustment;
-    const startTime = Date.now();
-
-    trigger.click();
-
-    const complete = blockForMs(time, endTime);
-
-    return complete || vibrate(Date.now() - startTime - Math.floor(time));
-  }
-
-  return vibrate();
-}
-
-function waitForMs(ms: number) {
+function asyncWait(ms: number) {
   return new Promise<void>((resolve) => {
-    waiter = setTimeout(resolve, ms);
+    clearTimeout(timer);
+    timer = setTimeout(resolve, ms);
   });
 }
 
@@ -136,43 +122,61 @@ if (
   typeof window !== "undefined" &&
   typeof document !== "undefined" &&
   typeof navigator !== "undefined" &&
-  !navigator.vibrate
+  polyfillKind
 ) {
   navigator.vibrate = teachSafariHowToVibe;
 
+  // Setup trigger elements
   trigger = document.createElement("label");
   trigger.ariaHidden = "true";
   trigger.style.display = "none";
 
-  const input = document.createElement("input");
-  input.type = "checkbox";
-  input.setAttribute("switch", "");
-  trigger.appendChild(input);
+  const triggerInput = document.createElement("input");
+  triggerInput.type = "checkbox";
+  triggerInput.setAttribute("switch", "");
+  trigger.appendChild(triggerInput);
 
-  function authorizeVibrations() {
-    if (grant) {
+  // Authorization handler
+  function authorizeVibrations({ target }: UIEvent) {
+    if (
+      target === trigger ||
+      target === triggerInput ||
+      getTimeUntilGrantExpires() > GRANT_TIMEOUT * 0.5
+    ) {
       return;
     }
 
-    clearTimeout(grant);
-
-    allowVibrationsDuringGrant();
-
-    setTimeout(() => {
-      // in older iOS versions, there was no such thing as a grant...
-      grant = null;
-    }, 1000);
+    grantedVibrate();
   }
 
-  document.body.addEventListener("click", authorizeVibrations);
-  document.body.addEventListener("keypress", authorizeVibrations);
+  // Add event listeners
+  window.addEventListener("click", authorizeVibrations);
+  window.addEventListener("touchend", authorizeVibrations);
+  window.addEventListener("keyup", authorizeVibrations);
+  window.addEventListener("keypress", authorizeVibrations);
 
-  // head so we don't trigger body clicks
+  // Add trigger to document
   if (document.head) {
     document.head.appendChild(trigger);
   } else {
-    setTimeout(() => {
-      document.head.appendChild(trigger);
-    }, 0);
+    setTimeout(() => document.head.appendChild(trigger), 0);
   }
+}
+
+function getSafariVersion() {
+  const userAgent = navigator.userAgent;
+
+  if (
+    userAgent.indexOf("Safari") !== -1 &&
+    userAgent.indexOf("Chrome") === -1
+  ) {
+    const versionRegex = /Version\/(\d+(\.\d+)?)/;
+    const match = userAgent.match(versionRegex);
+
+    if (match && match[1]) {
+      return parseFloat(match[1]);
+    }
+  }
+
+  return null;
 }

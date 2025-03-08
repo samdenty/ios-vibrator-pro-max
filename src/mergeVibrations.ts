@@ -8,7 +8,7 @@ export function mergeVibrations(...patterns: Vibration[]): number[] {
   // Normalize patterns to millisecond precision
   const normalizedPatterns: Vibration[] = patterns.map(([start, intervals]) => [
     Math.round(start),
-    intervals.map((interval) => Math.max(1, Math.round(interval))), // Ensure at least 1ms
+    intervals.map((interval) => Math.max(0, Math.round(interval))), // Ensure at least 1ms
   ]);
 
   // Find the latest start time
@@ -67,10 +67,10 @@ export function mergeVibrations(...patterns: Vibration[]): number[] {
     }
   }
 
-  // Remove trailing rest period if it exists
   if (result.length > 0 && !timeline[0]) {
-    result.shift();
+    result.unshift(0);
   }
+
   if (result.length > 0 && !timeline[timeline.length - 1]) {
     result.pop();
   }
