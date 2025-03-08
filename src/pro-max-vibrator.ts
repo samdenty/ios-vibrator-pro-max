@@ -46,6 +46,8 @@ function teachSafariHowToVibe(
 async function grantedVibrate() {
   lastGrant = Date.now();
 
+  let adjustment = 0;
+
   while (true) {
     vibration = [Date.now(), mergeVibrations([Date.now(), []], vibration)];
 
@@ -62,13 +64,13 @@ async function grantedVibrate() {
     }
 
     const vibrate = vibrateMs > 0;
-    const waitTime = vibrate ? MAGIC_NUMBER : waitMs ?? 0;
+    const waitTime = (vibrate ? MAGIC_NUMBER : waitMs ?? 0) + adjustment;
 
     if (vibrate) {
       trigger.click();
     }
 
-    await wait(waitTime);
+    adjustment = await wait(waitTime);
   }
 }
 
@@ -85,37 +87,42 @@ function getTimeUntilGrantExpires(): number {
 }
 
 async function wait(duration: number) {
-  if (!blockMainThread) {
+  const timeUntilGrantExpires = getTimeUntilGrantExpires();
+  const grantTimeout = timeUntilGrantExpires - 150;
+
+  if (blockMainThread && grantTimeout <= 0) {
+    return blockingWait(duration);
+  }
+
+  if (!blockMainThread || grantTimeout > duration) {
     return asyncWait(duration);
   }
 
-  const timeUntilGrantExpires = getTimeUntilGrantExpires();
+  const adjustment = await asyncWait(grantTimeout);
+  const wait = duration - grantTimeout - adjustment;
+  return blockingWait(wait);
+}
+
+function blockingWait(ms: number) {
+  if (ms < 0) {
+    return ms;
+  }
+
+  const start = Date.now();
+  while (Date.now() - start < ms) {}
+
+  return 0;
+}
+
+async function asyncWait(ms: number) {
   const start = Date.now();
 
-  if (timeUntilGrantExpires > 150) {
-    await asyncWait(Math.min(duration, timeUntilGrantExpires - 150));
-  }
-
-  blockingWait(duration - (Date.now() - start));
-}
-
-function blockingWait(ms: number, endTime?: number) {
-  if (ms < 0) {
-    return;
-  }
-
-  const startTime = Date.now();
-
-  while (Date.now() - startTime < ms) {
-    if (endTime && Date.now() >= endTime) break;
-  }
-}
-
-function asyncWait(ms: number) {
-  return new Promise<void>((resolve) => {
+  await new Promise<void>((resolve) => {
     clearTimeout(timer);
     timer = setTimeout(resolve, ms);
   });
+
+  return ms - (Date.now() - start);
 }
 
 if (
