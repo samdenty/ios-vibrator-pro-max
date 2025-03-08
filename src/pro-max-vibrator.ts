@@ -1,6 +1,6 @@
 // Sorry Tim Cook, PWAs deserve some love too...
 
-import { mergeVibrations, type Vibration } from "./mergeVibrations.js";
+import { trimVibrations, type Vibration } from "./mergeVibrations.js";
 
 const SAFARI_VERSION = getSafariVersion();
 const MAGIC_NUMBER = 26.26;
@@ -49,7 +49,10 @@ async function grantedVibrate() {
   let adjustment = 0;
 
   while (true) {
-    vibration = [Date.now(), mergeVibrations([Date.now(), []], vibration)];
+    vibration = [
+      Date.now(),
+      trimVibrations(Date.now() - vibration[0], vibration[1]),
+    ];
 
     const [vibrateMs, waitMs] = vibration[1] as (number | undefined)[];
 
