@@ -94,6 +94,10 @@ export function trimVibrations(amount: number, patterns: number[]): number[] {
 
       // If there's duration left, add it to the result
       if (remaining > 0) {
+        if (!result.length && i % 2) {
+          result.push(0);
+        }
+
         result.push(remaining);
         remainingAmount = 0; // Used all the trim amount
       } else {
@@ -101,6 +105,10 @@ export function trimVibrations(amount: number, patterns: number[]): number[] {
         remainingAmount = Math.abs(remaining); // Carry over the remaining amount
       }
     } else {
+      if (!result.length && i % 2) {
+        result.push(0);
+      }
+
       // No more trimming needed, add the vibration as is
       result.push(currentVibration);
     }

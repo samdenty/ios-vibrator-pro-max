@@ -148,11 +148,7 @@ if (
 
   // Authorization handler
   function authorizeVibrations({ target }: UIEvent) {
-    if (
-      target === trigger ||
-      target === triggerInput ||
-      getTimeUntilGrantExpires() > GRANT_TIMEOUT * 0.5
-    ) {
+    if (target === trigger || target === triggerInput) {
       return;
     }
 
