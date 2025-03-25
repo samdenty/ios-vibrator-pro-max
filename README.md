@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/ios-vibrator-pro-max.svg?style=flat-square)](https://www.npmjs.com/package/ios-vibrator-pro-max)
 [![npm downloads](https://img.shields.io/npm/dm/ios-vibrator-pro-max.svg?style=flat-square)](https://www.npmjs.com/package/ios-vibrator-pro-max)
-[![Demo](https://img.shields.io/badge/StackBlitz-Demo-blue.svg?style=flat-square)](https://ios-vibrate-api-demo.vercel.app/)
+[![Demo](https://img.shields.io/badge/Demo-blue.svg?style=flat-square)](https://ios-vibrate-api-demo.vercel.app/)
 
 
 Finally Safari added an unofficial™️ vibration API. I'm sorry to whoever who let this amazing feature/bug accidentally ship it's way into iOS 18. Tim cook please don't remove it, the web & PWAs need love too.
