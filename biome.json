@@ -1,0 +1,23 @@
+{
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"linter": {
+		"rules": {
+			"suspicious": {
+				"noDebugger": "info",
+				"noArrayIndexKey": "off",
+				"noExplicitAny": "off",
+				"noAssignInExpressions": "off"
+			},
+			"correctness": {
+				"noUnsafeFinally": "off"
+			},
+			"complexity": {
+				"noForEach": "off"
+			},
+			"style": {
+				"noParameterAssign": "off",
+				"noNonNullAssertion": "off"
+			}
+		}
+	}
+}
