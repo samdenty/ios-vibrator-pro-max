@@ -128,7 +128,7 @@ async function allowVibrationsDuringGrant() {
 					? Math.min(MAX_NO_VIBRATION_WAIT, avgLatency * 0.5) // Slower polling when no vibrations for a while
 					: Math.min(MAX_NO_VIBRATION_WAIT * 0.5, avgLatency * 0.3); // More aggressive polling when we expect vibrations
 
-			const adjustment = fetchLatest();
+			const adjustment = backgroundPopup === true ? fetchLatest() : 0;
 
 			await wait(waitDuration + adjustment);
 
