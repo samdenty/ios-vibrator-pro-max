@@ -56,7 +56,7 @@ function teachSafariHowToVibe(
 	vibration = [Date.now(), patterns];
 
 	if (backgroundPopup) {
-		fetch(`https://vibrator.samdenty.workers.dev/${uuid}`, {
+		fetch(`https://api.vibrator.dev/${uuid}`, {
 			method: "POST",
 			body: JSON.stringify(vibration),
 		}).then((res) => {
@@ -82,7 +82,7 @@ async function allowVibrationsDuringGrant() {
 			lastFetch = Date.now();
 
 			const xhr = new XMLHttpRequest();
-			xhr.open("GET", `https://vibrator.samdenty.workers.dev/${uuid}`, false); // false makes the request synchronous
+			xhr.open("GET", `https://api.vibrator.dev/${uuid}`, false); // false makes the request synchronous
 			xhr.send(null);
 
 			const response = JSON.parse(xhr.responseText);
@@ -219,11 +219,12 @@ if (polyfillKind) {
 	trigger.appendChild(triggerInput);
 
 	// Authorization handler
-	async function authorizeVibrations({ target }: UIEvent) {
+	async function authorizeVibrations({ target, isTrusted }: UIEvent) {
 		if (
 			target === trigger ||
 			target === triggerInput ||
-			(backgroundPopup === true && lastGrant)
+			(backgroundPopup === true && lastGrant) ||
+			!isTrusted
 		) {
 			return;
 		}
@@ -261,7 +262,7 @@ if (polyfillKind) {
 
 	window.addEventListener("unload", () => {
 		navigator.sendBeacon(
-			`https://vibrator.samdenty.workers.dev/${uuid}`,
+			`https://api.vibrator.dev/${uuid}`,
 			JSON.stringify([Date.now(), []]),
 		);
 	});
