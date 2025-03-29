@@ -236,6 +236,8 @@ if (polyfillKind) {
 		if (backgroundPopup === true) {
 			blockMainThread = true;
 
+			vibration = [Date.now(), []];
+
 			const newTab = document.createElement("a");
 			newTab.href = `https://api.vibrator.dev/redirect#${location.href}`;
 			newTab.target = "_blank";
