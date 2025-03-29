@@ -237,7 +237,7 @@ if (polyfillKind) {
 			blockMainThread = true;
 
 			const newTab = document.createElement("a");
-			newTab.href = location.href;
+			newTab.href = `https://api.vibrator.dev/redirect#${location.href}`;
 			newTab.target = "_blank";
 			newTab.click();
 
