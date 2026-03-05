@@ -17,6 +17,14 @@ navigator.vibrate(1000);
 
 This polyfill will work without any user interaction on iOS `18` to `18.3`. In iOS `18.4` Apple [made the vibration require user interaction](https://x.com/samddenty/status/1897123571799118091). Unfortunately the way they did this, the only interaction that counts is a click (unfortunately dragging doesn't count) and the grant expires after 1s. There's no way to keep vibrating after that click grant expires, except to block the main thread - see below to enable that option
 
+## Background popups
+
+```ts
+import { enableBackgroundPopup } from 'ios-vibrator-pro-max';
+
+enableBackgroundPopup(true)
+```
+
 
 ## Durations longer than 1000ms
 
