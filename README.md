@@ -13,6 +13,16 @@ import "ios-vibrator-pro-max";
 navigator.vibrate(1000);
 ```
 
+## Background popup
+
+This enables background vibrations
+
+```ts
+import { enableBackgroundPopup } from "ios-vibrator-pro-max";
+
+enableBackgroundPopup(true);
+```
+
 ## Durations longer than 1000ms
 
 This will block the main thread for the duration of the vibration pattern. Only vibration patterns longer than 1s total will block. Blocking is required as it's the only way to extend the trusted event grant of the click handler (async vibrations have expiration)
