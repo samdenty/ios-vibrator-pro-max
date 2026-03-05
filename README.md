@@ -7,10 +7,19 @@
 
 Finally Safari added an unofficial™️ vibration API. I'm sorry to whoever who let this amazing feature/bug accidentally ship it's way into iOS 18. Tim cook please don't remove it, the web & PWAs need love too.
 
+## Usage
+
 ```ts
 import "ios-vibrator-pro-max";
 
 navigator.vibrate(1000);
+```
+HTML + Vanilla JS
+```html
+  <script src="ios-vibrator-pro-max.min.js"></script>
+
+  <button onclick="navigator.vibrate(100)">Click me</button>
+  <button onclick="navigator.vibrate([200, 200, 200, 200, 200])">Click me</button>
 ```
 
 ## ⚠️ Limitations
