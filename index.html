@@ -1,10 +1,11 @@
+<div id="a"></div>
 <script type="module">
-  import { enableMainThreadBlocking } from "./src";
+  import { enableBackgroundPopup } from "./src";
 
-  enableMainThreadBlocking(true);
+  enableBackgroundPopup(true);
+
+  navigator.vibrate([500,500,500,500,500,500,500,500,500,500,500,500,500,500,500,500]);
 </script>
 
 <input value="Try typing" oninput="navigator.vibrate(100)" />
-<button onclick="navigator.vibrate([500, 500, 500, 500, 500, 500, 500])">
-  Click me
-</button>
+<button onclick="navigator.vibrate([500,500,500,500,500])">Click me</button>
