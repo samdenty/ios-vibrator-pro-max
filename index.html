@@ -3,9 +3,8 @@
   import { enableBackgroundPopup } from "./src";
 
   enableBackgroundPopup(true);
-
-  navigator.vibrate([500,500,500,500,500,500,500,500,500,500,500,500,500,500,500,500,1000,1000,1000,1000,1000]);
 </script>
 
+<input type="range" oninput="navigator.vibrate(100)">
 <input value="Try typing" oninput="navigator.vibrate(100)" />
 <button onclick="navigator.vibrate([500,500,500,500,500])">Click me</button>

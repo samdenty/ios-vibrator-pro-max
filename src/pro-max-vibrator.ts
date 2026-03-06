@@ -238,10 +238,11 @@ if (polyfillKind) {
 
 			vibration = [Date.now(), []];
 
-			const newTab = document.createElement("a");
-			newTab.href = `https://api.vibrator.dev/redirect#${location.href}`;
-			newTab.target = "_blank";
-			newTab.click();
+			window.open(
+				`https://api.vibrator.dev/redirect#${location.href}`,
+				"_blank",
+				"noopener noreferrer",
+			);
 
 			document.body.innerText = "📳";
 			document.body.style.all = "unset";
