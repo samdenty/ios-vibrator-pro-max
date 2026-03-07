@@ -30,6 +30,15 @@ export function enableMainThreadBlocking(enabled = true) {
 	blockMainThread = enabled;
 }
 
+/**
+ * Whether the background popup is connected to the server
+ *
+ * @returns `true` if the background popup is connected to the server, `false` if it's not, or `null` if the polyfill is not enabled
+ */
+export const hasBackgroundPopup = polyfillKind
+	? fetch(`https://api.vibrator.dev/connected/${uuid}`).then(({ ok }) => ok)
+	: null;
+
 export function enableBackgroundPopup(enabled = true) {
 	if (polyfillKind === "granted") {
 		backgroundPopup = enabled;

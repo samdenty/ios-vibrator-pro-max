@@ -1,10 +1,15 @@
 <div id="a"></div>
-<script type="module">
-  import { enableBackgroundPopup } from "./src";
-
-  enableBackgroundPopup(true);
-</script>
 
 <input type="range" oninput="navigator.vibrate(100)">
 <input value="Try typing" oninput="navigator.vibrate(100)" />
 <button onclick="navigator.vibrate([500,500,500,500,500])">Click me</button>
+
+<script type="module" async>
+  import { enableBackgroundPopup, hasBackgroundPopup } from "./src";
+
+  enableBackgroundPopup(true);
+
+  if (!(await hasBackgroundPopup)) {
+    document.body.innerHTML = `Click anywhere to open a popup`
+  }
+</script>
