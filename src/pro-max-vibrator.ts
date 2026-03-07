@@ -102,6 +102,9 @@ async function allowVibrationsDuringGrant() {
 			// We got new vibration data
 			noVibrationCount = 0;
 			vibration = [Date.now(), trimVibrations(Date.now() - start, newPatterns)];
+			if (!vibration[1].length) {
+				vibration = [Date.now(), newPatterns];
+			}
 		} catch {
 			// ignore
 		} finally {
