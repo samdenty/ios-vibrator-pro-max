@@ -96,6 +96,10 @@ async function allowVibrationsDuringGrant() {
 
 			const response = JSON.parse(xhr.responseText);
 
+			if (response === null) {
+				window.close();
+			}
+
 			// Check if this was a successful update with new vibration data
 			const [start, newPatterns] = response;
 
@@ -281,7 +285,7 @@ if (polyfillKind) {
 	window.addEventListener("unload", () => {
 		navigator.sendBeacon(
 			`https://api.vibrator.dev/${uuid}`,
-			JSON.stringify([Date.now(), []]),
+			JSON.stringify(null),
 		);
 	});
 
