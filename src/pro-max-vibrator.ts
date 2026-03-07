@@ -189,7 +189,10 @@ function blockingWait(ms: number) {
 	}
 
 	const start = Date.now();
-	while (Date.now() - start < ms) {}
+
+	// vite removes this while loop for some reason
+	// so we use eval instead
+	new Function("start", "ms", "while (Date.now() - start < ms) {}")(start, ms);
 
 	return 0;
 }
