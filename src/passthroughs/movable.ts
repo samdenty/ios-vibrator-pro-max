@@ -137,7 +137,7 @@ export function handleMovable(element: HTMLElement) {
 		() => {
 			if (!touchStart) {
 				if (isInputRange) {
-					return ["overflow: hidden", "opacity: 0.4"];
+					return ["overflow: hidden", "opacity: 0"];
 				}
 
 				return [
@@ -145,7 +145,7 @@ export function handleMovable(element: HTMLElement) {
 					"width: 100%",
 					"height: 100%",
 					"overflow: hidden",
-					"opacity: 0.4",
+					"opacity: 0",
 				];
 			}
 
@@ -167,7 +167,7 @@ export function handleMovable(element: HTMLElement) {
 				`top: ${top}px`,
 				`left: ${left}px`,
 				`transform: rotate(${angleDeg360}deg) translateX(${vibrate ? (checked ? width : -width) / 3 : width}px)`,
-				"opacity: 1",
+				"opacity: 0",
 			];
 		},
 	);
