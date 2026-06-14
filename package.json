@@ -12,7 +12,7 @@
 		"url": "https://github.com/samdenty/ios-vibrator-pro-max.git"
 	},
 	"scripts": {
-		"dev": "vite --host",
+		"dev": "cd demo && pnpm dev",
 		"lint": "biome check",
 		"lint:fix": "pnpm lint --write",
 		"build": "rm -rf dist; tsc -b",

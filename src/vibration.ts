@@ -4,8 +4,8 @@ import {
 	enableMainThreadBlocking,
 	polyfillKind,
 	uuid,
-} from "./options.js";
-import { type Vibration, trimVibrations } from "./utils/merge-vibrations.js";
+} from "./options";
+import { type Vibration, trimVibrations } from "./utils/merge-vibrations";
 
 const MAGIC_NUMBER = 26.26;
 const GRANT_TIMEOUT = 850;
@@ -13,6 +13,8 @@ const GRANT_TIMEOUT = 850;
 export const ignoredElements = new WeakSet<HTMLElement>([]);
 export const rootTrigger = createVibrationTrigger();
 export const hiddenTrigger = createVibrationTrigger();
+
+hiddenTrigger?.label.appendChild(hiddenTrigger?.input);
 
 let timer: any;
 let lastGrant: number | null = null;
@@ -42,38 +44,33 @@ export function shouldVibrate() {
 }
 
 export function createVibrationTrigger() {
-	const label = document.createElement("label");
+	if (typeof document === "undefined") {
+		return null;
+	}
 
-	const clip = document.createElement("div");
-	clip.setAttribute("style", "display: none !important");
+	const label = document.createElement("label");
 
 	const input = document.createElement("input");
 	input.type = "checkbox";
 	input.setAttribute("switch", "");
+	input.setAttribute("style", "display: none !important");
 
 	setTimeout(() => {
 		label.tabIndex = -1;
-		label.ariaHidden = "true";
-
 		input.tabIndex = -1;
-		input.ariaHidden = "true";
 	});
-
-	clip.appendChild(input);
-	label.appendChild(clip);
 
 	ignoredElements.add(label);
 	ignoredElements.add(input);
-	ignoredElements.add(clip);
 
-	return { label, input, clip };
+	return { label, input };
 }
 
 // Authorization handler
 export async function authorizeVibrations({ target, isTrusted }: UIEvent) {
 	if (
-		target === hiddenTrigger.label ||
-		target === hiddenTrigger.input ||
+		target === hiddenTrigger?.label ||
+		target === hiddenTrigger?.input ||
 		(backgroundPopup && !popupConnected && lastGrant) ||
 		!isTrusted
 	) {
@@ -187,7 +184,7 @@ async function allowVibrationsDuringGrant() {
 		const waitTime = (vibrate ? MAGIC_NUMBER : (waitMs ?? 0)) + adjustment;
 
 		if (vibrate) {
-			hiddenTrigger.label.click();
+			hiddenTrigger?.label.click();
 		}
 
 		// If the wait time is long enough, schedule another fetch during it

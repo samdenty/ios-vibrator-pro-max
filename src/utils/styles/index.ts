@@ -1,2 +1,2 @@
-export * from "./update-styles.js";
-export * from "./pseudo-styles.js";
+export * from "./update-styles";
+export * from "./pseudo-styles";

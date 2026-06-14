@@ -1,20 +1,30 @@
-import { registerStyleUpdater } from "../utils/index.js";
+import { registerStyleUpdater } from "../utils/index";
 import {
 	createVibrationTrigger,
 	hiddenTrigger,
 	ignoredElements,
 	rootTrigger,
 	shouldVibrate,
-} from "../vibration.js";
-import { cloneMouseEvent } from "./mouse.js";
-import { isNativeMovableElement } from "./movable.js";
+} from "../vibration";
+import { clonePointerEvent } from "./pointer";
+import { isNativeMovableElement } from "./movable";
 
-export const triggersRoot = document.createElement("div");
-triggersRoot.setAttribute("for", "ios-vibrator-pro-max-content-triggers");
-triggersRoot.appendChild(hiddenTrigger.label);
-ignoredElements.add(triggersRoot);
+export const triggersRoot =
+	typeof document !== "undefined" ? document.createElement("div") : null!;
 
-export const CLICKABLE = ["button", "input", "textarea", "select", "label"];
+if (triggersRoot && hiddenTrigger) {
+	triggersRoot.setAttribute("for", "ios-vibrator-pro-max-content-triggers");
+	triggersRoot.appendChild(hiddenTrigger.label);
+	ignoredElements.add(triggersRoot);
+}
+
+export const CLICKABLE = new Set([
+	"button",
+	"input",
+	"textarea",
+	"select",
+	"label",
+]);
 
 export const clickableTriggers = new Map<
 	HTMLElement,
@@ -25,13 +35,28 @@ export const clickableTriggers = new Map<
 	}
 >();
 
+export const CLICKABLE_ROLES = new Set([
+	"button",
+	"input",
+	"textarea",
+	"select",
+	"label",
+	"slider",
+	"range",
+	"spinbutton",
+	"switch",
+	"tab",
+	"tabpanel",
+	"treeitem",
+]);
+
 function isClickableElement(element: HTMLElement) {
 	const tagName = element.tagName.toLowerCase();
 	if (element.draggable) {
 		return;
 	}
 
-	if (element.role !== "button" && !CLICKABLE.includes(tagName)) {
+	if (!CLICKABLE_ROLES.has(element.role ?? "") && !CLICKABLE.has(tagName)) {
 		return false;
 	}
 
@@ -45,8 +70,8 @@ function isClickableElement(element: HTMLElement) {
 let anchorId = 1;
 let ignoreRootClick = false;
 
-rootTrigger.label.addEventListener("click", (event) => {
-	if (event.target !== rootTrigger.label) {
+rootTrigger?.label.addEventListener("click", (event) => {
+	if (event.target !== rootTrigger?.label) {
 		return;
 	}
 
@@ -79,7 +104,17 @@ export function handleClickable(element: HTMLElement) {
 		return;
 	}
 
-	const trigger = createVibrationTrigger();
+	const trigger = {
+		...createVibrationTrigger()!,
+		clip: document.createElement("div"),
+	};
+
+	ignoredElements.add(trigger.clip);
+
+	trigger.clip.appendChild(trigger.input);
+	trigger.clip.setAttribute("style", "display: none !important");
+	trigger.label.appendChild(trigger.clip);
+
 	const anchorName = `--ios-vibrator-pro-max-${anchorId++}`;
 
 	let stopPointerEvents = false;
@@ -120,7 +155,7 @@ export function handleClickable(element: HTMLElement) {
 
 	function click(event: MouseEvent) {
 		ignoreRootClick = true;
-		element.dispatchEvent(cloneMouseEvent("click", event));
+		element.dispatchEvent(clonePointerEvent("click", event));
 		ignoreRootClick = false;
 	}
 
@@ -130,11 +165,7 @@ export function handleClickable(element: HTMLElement) {
 
 	const computedStyle = getComputedStyle(element);
 
-	element.style.setProperty(
-		"anchor-name",
-		`${anchorName}${computedStyle.anchorName !== "none" ? `, ${computedStyle.anchorName}` : ""}`,
-		"important",
-	);
+	element.style.anchorName = `${anchorName}${computedStyle.anchorName !== "none" ? `, ${computedStyle.anchorName}` : ""}`;
 
 	const [updateStyles, disposeStyles] = registerStyleUpdater(
 		trigger.label,
@@ -183,10 +214,10 @@ export function handleClickable(element: HTMLElement) {
  *
  * The wrapping div on body is a button so it can receive false clicks.
  */
-rootTrigger.label.addEventListener(
+rootTrigger?.label.addEventListener(
 	"click",
 	(event: MouseEvent) => {
-		if (event.target !== rootTrigger.label) {
+		if (event.target !== rootTrigger?.label) {
 			return;
 		}
 
@@ -202,13 +233,17 @@ rootTrigger.label.addEventListener(
 			return [distance, trigger] as const;
 		});
 
+		if (!rects.length) {
+			return;
+		}
+
 		rects.sort(([d1], [d2]) => d1 - d2);
 
 		const [distance, trigger] = rects[0];
 
 		if (distance && distance <= 15) {
 			console.log("element is nearby so simulating click on ", trigger.label);
-			const clickEvent = cloneMouseEvent("click", event);
+			const clickEvent = clonePointerEvent("click", event);
 			trigger.label.dispatchEvent(clickEvent);
 		}
 	},

@@ -1,3 +1,3 @@
-export * from "./safari-version.js";
-export * from "./styles/index.js";
-export * from "./uuid.js";
+export * from "./safari-version";
+export * from "./styles/index";
+export * from "./uuid";

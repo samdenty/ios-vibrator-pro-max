@@ -1,5 +1,5 @@
-import { getPseudoStyles, registerStyleUpdater } from "../utils/index.js";
-import { clickableTriggers, triggersRoot } from "./clickable.js";
+import { getPseudoStyles, registerStyleUpdater } from "../utils/index";
+import { clickableTriggers, triggersRoot } from "./clickable";
 
 const hiddenTriggers = new Set<HTMLElement>();
 
@@ -210,13 +210,19 @@ export function handleInputable(element: HTMLElement) {
 	};
 }
 
-let lastActiveTrigger = document.activeElement as HTMLElement | null;
+let lastActiveTrigger =
+	typeof document !== "undefined"
+		? (document.activeElement as HTMLElement | null)
+		: null;
 
 /**
  * For inputs and textareas, we need to disable the click passthrough when the element is focused.
  */
 setInterval(() => {
-	const activeElement = document.activeElement as HTMLElement | null;
+	const activeElement =
+		typeof document !== "undefined"
+			? (document.activeElement as HTMLElement | null)
+			: null;
 
 	if (activeElement === lastActiveTrigger) {
 		return;

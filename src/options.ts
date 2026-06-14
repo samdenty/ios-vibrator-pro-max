@@ -1,7 +1,7 @@
 // Sorry Tim Cook, PWAs deserve some love too...
 
-import { getSafariVersion, uuidv4 } from "./utils/index.js";
-import { vibrate } from "./vibration.js";
+import { getSafariVersion, uuidv4 } from "./utils/index";
+import { vibrate } from "./vibration";
 
 const SAFARI_VERSION = getSafariVersion();
 

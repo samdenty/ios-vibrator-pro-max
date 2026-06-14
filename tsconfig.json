@@ -10,7 +10,7 @@
 		"skipLibCheck": true,
 
 		/* Bundler mode */
-		"moduleResolution": "NodeNext",
+		"moduleResolution": "Bundler",
 		"isolatedModules": true,
 		"moduleDetection": "force",
 		"declaration": true,

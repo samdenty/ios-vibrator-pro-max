@@ -1,8 +1,8 @@
-import { registerStyleUpdater } from "../utils/index.js";
-import { shouldVibrate } from "../vibration.js";
-import { clickableTriggers } from "./clickable.js";
-import { isInputRangeElement } from "./inputable.js";
-import { cloneMouseEvent } from "./mouse.js";
+import { registerStyleUpdater } from "../utils/index";
+import { shouldVibrate } from "../vibration";
+import { clickableTriggers } from "./clickable";
+import { isInputRangeElement } from "./inputable";
+import { clonePointerEvent } from "./pointer";
 
 export function isNativeMovableElement(element: HTMLElement) {
 	const tagName = element.tagName.toLowerCase();
@@ -16,7 +16,13 @@ export function isNativeMovableElement(element: HTMLElement) {
 	);
 }
 
+export const MOVABLE_ROLES = new Set(["slider", "range"]);
+
 export function isMovableElement(element: HTMLElement) {
+	if (MOVABLE_ROLES.has(element.role ?? "")) {
+		return true;
+	}
+
 	return isInputRangeElement(element);
 }
 
@@ -71,7 +77,7 @@ export function handleMovable(element: HTMLElement) {
 			console.log("trigger synthetic click on ", trigger.label);
 
 			trigger.label.dispatchEvent(
-				cloneMouseEvent("click", {
+				clonePointerEvent("click", {
 					altKey: touchStart.altKey,
 					cancelable: touchStart.cancelable,
 					ctrlKey: touchStart.ctrlKey,
@@ -141,7 +147,7 @@ export function handleMovable(element: HTMLElement) {
 				}
 
 				return [
-					"all: unset",
+					"all: revert",
 					"width: 100%",
 					"height: 100%",
 					"overflow: hidden",
@@ -172,9 +178,18 @@ export function handleMovable(element: HTMLElement) {
 		},
 	);
 
+	const setPointerCapture = element.setPointerCapture;
+	const releasePointerCapture = element.releasePointerCapture;
+
+	element.setPointerCapture = () => {};
+	element.releasePointerCapture = () => {};
+
 	return () => {
 		disposeClipStyles();
 		disposeInputStyles();
+
+		element.setPointerCapture = setPointerCapture;
+		element.releasePointerCapture = releasePointerCapture;
 
 		trigger.input.removeEventListener("touchstart", onTouchStart);
 		trigger.input.removeEventListener("touchmove", onTouchMove);

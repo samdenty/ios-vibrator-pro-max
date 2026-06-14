@@ -1,2 +1,2 @@
-export * from "./polyfill.js";
-export * from "./utils/merge-vibrations.js";
+export * from "./polyfill";
+export * from "./utils/merge-vibrations";

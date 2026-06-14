@@ -1,18 +1,18 @@
 // Sorry Tim Cook, PWAs deserve some love too...
 
-import { polyfillKind, uuid } from "./options.js";
+import { polyfillKind, uuid } from "./options";
 import {
 	handleAddElement,
 	handleRemoveElement,
 	triggersRoot,
-} from "./passthroughs/index.js";
-import { registerStyleUpdater } from "./utils/index.js";
+} from "./passthroughs/index";
+import { registerStyleUpdater } from "./utils/index";
 import {
 	rootTrigger,
 	vibrate,
 	ignoredElements,
 	authorizeVibrations,
-} from "./vibration.js";
+} from "./vibration";
 
 function polyfill(rawPatterns: Iterable<number> | VibratePattern): boolean {
 	const patterns =
@@ -30,42 +30,97 @@ function polyfill(rawPatterns: Iterable<number> | VibratePattern): boolean {
 	return true;
 }
 
-const shouldPolyfill = polyfillKind && !navigator.vibrate;
-const style = document.createElement("style");
+let style: HTMLStyleElement | null = null;
 
-// Setup trigger elements
-rootTrigger.label.htmlFor = "ios-vibrator-pro-max";
+if (rootTrigger) {
+	style = document.createElement("style");
 
-registerStyleUpdater(rootTrigger.label, () => {
-	const styles = getComputedStyle(document.body);
+	// Setup trigger elements
+	rootTrigger.label.htmlFor = "ios-vibrator-pro-max";
 
-	return [
-		"all: unset",
-		"-webkit-tap-highlight-color: transparent",
-		"position: fixed",
-		"inset: 0",
-		"height: inherit",
-		"width: inherit",
-		`overflow: ${styles.overflow}`,
-		`margin: ${styles.margin}`,
-	];
-});
-
-style.textContent = `
+	style.textContent = `
   label[for="ios-vibrator-pro-max"] > * {
     -webkit-tap-highlight-color: initial !important;
   }
 `;
 
-rootTrigger.input.id = "ios-vibrator-pro-max";
-rootTrigger.input.name = "ios-vibrator-pro-max";
+	triggersRoot.appendChild(rootTrigger.input);
+
+	rootTrigger.input.id = "ios-vibrator-pro-max";
+	rootTrigger.input.name = "ios-vibrator-pro-max";
+}
 
 function initPolyfill() {
+	if (!rootTrigger || !style) {
+		return;
+	}
+
 	document.head.appendChild(style);
-	document.body.appendChild(rootTrigger.label);
+	document.body.prepend(rootTrigger.label);
 	document.body.appendChild(triggersRoot);
 
-	for (const child of document.body.childNodes) {
+	for (const attribute of document.body.attributes) {
+		rootTrigger.label.setAttribute(attribute.name, attribute.value);
+	}
+
+	const body = document.body;
+
+	let raf: number | null = null;
+	let ignoreMutation = false;
+
+	const updateBodyStyles = () => {
+		raf = null;
+		ignoreMutation = true;
+
+		if (rootTrigger!.label.className !== body.className) {
+			rootTrigger!.label.className = body.className;
+		}
+
+		body.removeAttribute("style");
+
+		const bodyStyles = getComputedStyle(body);
+		const rootTriggerStyles = getComputedStyle(rootTrigger!.label);
+
+		rootTrigger!.label.setAttribute(
+			"style",
+			[
+				"position: fixed",
+				"inset: 0",
+				"-webkit-tap-highlight-color: transparent",
+			].join("; "),
+		);
+
+		for (const style of bodyStyles) {
+			if (
+				rootTriggerStyles.getPropertyValue(style) ===
+				bodyStyles.getPropertyValue(style)
+			) {
+				continue;
+			}
+			rootTrigger!.label.style.setProperty(
+				style,
+				bodyStyles.getPropertyValue(style),
+			);
+		}
+
+		document.documentElement.style.setProperty(
+			"background",
+			bodyStyles.background,
+		);
+
+		body.setAttribute(
+			"style",
+			"all: unset !important; display: contents !important",
+		);
+
+		setTimeout(() => {
+			ignoreMutation = false;
+		});
+	};
+
+	updateBodyStyles();
+
+	for (const child of [...document.body.childNodes]) {
 		if (ignoredElements.has(child as HTMLElement)) {
 			continue;
 		}
@@ -81,15 +136,21 @@ function initPolyfill() {
 		for (const mutation of mutations) {
 			for (const node of mutation.addedNodes) {
 				if (!ignoredElements.has(node as HTMLElement)) {
-					rootTrigger.label.appendChild(node);
+					rootTrigger!.label.appendChild(node);
 				}
 			}
 		}
 	});
 
-	reparentObserver.observe(document.body, { childList: true });
+	reparentObserver.observe(body, { childList: true });
 
 	const observer = new MutationObserver((mutations) => {
+		if (ignoreMutation) {
+			return;
+		}
+
+		raf ??= requestAnimationFrame(updateBodyStyles);
+
 		for (const mutation of mutations) {
 			for (const node of mutation.addedNodes) {
 				if (node.nodeType === Node.ELEMENT_NODE) {
@@ -111,6 +172,12 @@ function initPolyfill() {
 		attributes: true,
 	});
 
+	Object.defineProperty(document, "body", {
+		get() {
+			return rootTrigger!.label;
+		},
+	});
+
 	// Add event listeners
 	window.addEventListener("click", authorizeVibrations);
 	window.addEventListener("touchend", authorizeVibrations);
@@ -125,15 +192,16 @@ function initPolyfill() {
 	});
 }
 
-if (shouldPolyfill) {
+if (polyfillKind) {
 	navigator.vibrate = polyfill;
 
-	// Add trigger to document
-	if (document.body) {
-		initPolyfill();
-	} else {
-		setTimeout(() => {
+	setTimeout(() => {
+		if (document.readyState === "complete") {
 			initPolyfill();
-		}, 0);
-	}
+		} else {
+			document.addEventListener("DOMContentLoaded", () => {
+				initPolyfill();
+			});
+		}
+	}, 200);
 }

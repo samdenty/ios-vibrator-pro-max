@@ -1,4 +1,4 @@
-import { clickableTriggers } from "./clickable.js";
+import { clickableTriggers } from "./clickable";
 
 export function handleTouchEvents(element: HTMLElement) {
 	const trigger = clickableTriggers.get(element);
