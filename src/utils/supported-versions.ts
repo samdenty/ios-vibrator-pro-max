@@ -1,4 +1,4 @@
-export function getSafariVersion() {
+function getSafariVersion() {
 	if (typeof navigator === "undefined") {
 		return null;
 	}
@@ -19,3 +19,14 @@ export function getSafariVersion() {
 
 	return null;
 }
+
+export const SAFARI_VERSION = getSafariVersion();
+
+export const polyfillKind =
+	SAFARI_VERSION && !navigator.vibrate
+		? SAFARI_VERSION >= 18.4
+			? "granted"
+			: SAFARI_VERSION >= 18
+				? "full"
+				: null
+		: null;

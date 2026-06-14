@@ -1,5 +1,5 @@
-import { registerStyleUpdater } from "../utils/index";
-import { shouldVibrate } from "../vibration";
+import { registerStyleUpdater } from "../../utils";
+import { shouldVibrate } from "../../vibration";
 import { clickableTriggers } from "./clickable";
 import { isInputRangeElement } from "./inputable";
 import { clonePointerEvent } from "./pointer";

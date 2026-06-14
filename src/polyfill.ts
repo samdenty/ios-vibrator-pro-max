@@ -1,18 +1,14 @@
 // Sorry Tim Cook, PWAs deserve some love too...
 
-import { polyfillKind, uuid } from "./options";
 import {
 	handleAddElement,
 	handleRemoveElement,
 	triggersRoot,
-} from "./passthroughs/index";
-import { registerStyleUpdater } from "./utils/index";
-import {
-	rootTrigger,
-	vibrate,
-	ignoredElements,
 	authorizeVibrations,
-} from "./vibration";
+	setBackgroundVibration,
+} from "./methods";
+import { asyncWait, polyfillKind } from "./utils";
+import { rootTrigger, setVibration, ignoredElements } from "./vibration";
 
 function polyfill(rawPatterns: Iterable<number> | VibratePattern): boolean {
 	const patterns =
@@ -25,7 +21,8 @@ function polyfill(rawPatterns: Iterable<number> | VibratePattern): boolean {
 		return false;
 	}
 
-	vibrate(patterns);
+	setVibration(patterns);
+	setBackgroundVibration(patterns);
 
 	return true;
 }
@@ -50,7 +47,14 @@ if (rootTrigger) {
 	rootTrigger.input.name = "ios-vibrator-pro-max";
 }
 
-function initPolyfill() {
+async function initPolyfill() {
+	window.addEventListener("click", authorizeVibrations);
+	window.addEventListener("touchend", authorizeVibrations);
+	window.addEventListener("keyup", authorizeVibrations);
+	window.addEventListener("keypress", authorizeVibrations);
+
+	await asyncWait(250);
+
 	if (!rootTrigger || !style) {
 		return;
 	}
@@ -177,31 +181,16 @@ function initPolyfill() {
 			return rootTrigger!.label;
 		},
 	});
-
-	// Add event listeners
-	window.addEventListener("click", authorizeVibrations);
-	window.addEventListener("touchend", authorizeVibrations);
-	window.addEventListener("keyup", authorizeVibrations);
-	window.addEventListener("keypress", authorizeVibrations);
-
-	window.addEventListener("unload", () => {
-		navigator.sendBeacon(
-			`https://api.vibrator.dev/${uuid}`,
-			JSON.stringify(null),
-		);
-	});
 }
 
 if (polyfillKind) {
 	navigator.vibrate = polyfill;
 
-	setTimeout(() => {
-		if (document.readyState === "complete") {
+	if (document.readyState === "complete") {
+		initPolyfill();
+	} else {
+		window.addEventListener("load", () => {
 			initPolyfill();
-		} else {
-			document.addEventListener("DOMContentLoaded", () => {
-				initPolyfill();
-			});
-		}
-	}, 200);
+		});
+	}
 }

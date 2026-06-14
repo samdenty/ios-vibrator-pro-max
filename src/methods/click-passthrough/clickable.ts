@@ -1,11 +1,11 @@
-import { registerStyleUpdater } from "../utils/index";
+import { registerStyleUpdater } from "../../utils";
 import {
 	createVibrationTrigger,
 	hiddenTrigger,
 	ignoredElements,
 	rootTrigger,
 	shouldVibrate,
-} from "../vibration";
+} from "../../vibration";
 import { clonePointerEvent } from "./pointer";
 import { isNativeMovableElement } from "./movable";
 

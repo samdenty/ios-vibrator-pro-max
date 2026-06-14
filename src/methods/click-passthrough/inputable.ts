@@ -1,4 +1,4 @@
-import { getPseudoStyles, registerStyleUpdater } from "../utils/index";
+import { getPseudoStyles, registerStyleUpdater } from "../../utils";
 import { clickableTriggers, triggersRoot } from "./clickable";
 
 const hiddenTriggers = new Set<HTMLElement>();

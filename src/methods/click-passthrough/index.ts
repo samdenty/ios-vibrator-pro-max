@@ -1,5 +1,5 @@
 import { handleClickable } from "./clickable";
-import { ignoredElements, rootTrigger } from "../vibration";
+import { ignoredElements, rootTrigger } from "../../vibration";
 import { handleTouchEvents } from "./touch";
 import { handleInputable } from "./inputable";
 import { handlePointerEvents } from "./pointer";
