@@ -29,6 +29,8 @@ export function handleTouchEvents(element: HTMLElement) {
 	}
 
 	const onTouchEvent = (event: TouchEvent) => {
+		console.log("onTouchEvent", event.type, event.target);
+
 		const forwardedEvent = new TouchEvent(event.type, {
 			bubbles: true,
 			altKey: event.altKey,
@@ -54,9 +56,9 @@ export function handleTouchEvents(element: HTMLElement) {
 	trigger.label.addEventListener("touchcancel", onTouchEvent, true);
 
 	return () => {
-		trigger.label.removeEventListener("touchstart", onTouchEvent, true);
-		trigger.label.removeEventListener("touchmove", onTouchEvent, true);
-		trigger.label.removeEventListener("touchend", onTouchEvent, true);
-		trigger.label.removeEventListener("touchcancel", onTouchEvent, true);
+		trigger.label.removeEventListener("touchstart", onTouchEvent);
+		trigger.label.removeEventListener("touchmove", onTouchEvent);
+		trigger.label.removeEventListener("touchend", onTouchEvent);
+		trigger.label.removeEventListener("touchcancel", onTouchEvent);
 	};
 }

@@ -1,5 +1,4 @@
-import { getPseudoStyles } from "../utils/styles/pseudo-styles.js";
-import { registerStyleUpdater } from "../utils/styles/update-styles.js";
+import { getPseudoStyles, registerStyleUpdater } from "../utils/index.js";
 import { clickableTriggers, triggersRoot } from "./clickable.js";
 
 const hiddenTriggers = new Set<HTMLElement>();
@@ -30,53 +29,116 @@ function handleInputRange(inputRange: HTMLInputElement) {
 	}
 
 	let lastValue = inputRange.value;
+	let preventChange = false;
 
 	const updateValue = (event: TouchEvent | MouseEvent) => {
 		const isClickEvent = !("touches" in event);
-		const isToSwitch = event.target === trigger.input;
-		const isToTrigger = event.target === trigger.label;
 
 		const clientX = isClickEvent ? event.clientX : event.touches[0].clientX;
 
-		if (isClickEvent ? isToTrigger : isToSwitch) {
-			const { width, x } = inputRange.getBoundingClientRect();
+		const { width, x } = inputRange.getBoundingClientRect();
 
-			const percentage = (clientX - x) / width;
+		const percentage = (clientX - x) / width;
 
-			const min = Number.parseFloat(inputRange.min) || 0;
-			const max = Number.parseFloat(inputRange.max) || 100;
-			const step = Number.parseFloat(inputRange.step) || 1;
+		const min = Number.parseFloat(inputRange.min) || 0;
+		const max = Number.parseFloat(inputRange.max) || 100;
+		const step = Number.parseFloat(inputRange.step) || 1;
 
-			const possibleRange = max - min;
-			const newValue = min + percentage * possibleRange;
+		const possibleRange = max - min;
+		const newValue = min + percentage * possibleRange;
 
-			inputRange.value = `${inputRange.step === "any" ? newValue : Math.round(newValue / step) * step}`;
-		}
+		inputRange.value = `${inputRange.step === "any" ? newValue : Math.round(newValue / step) * step}`;
 
-		if (
-			lastValue !== inputRange.value &&
-			isClickEvent &&
-			!isToTrigger &&
-			isToSwitch
-		) {
+		console.log(
+			"updateValue",
+			inputRange.value,
+			lastValue,
+			lastValue !== inputRange.value,
+			isClickEvent,
+			event.target,
+		);
+
+		if (lastValue !== inputRange.value && isClickEvent) {
 			lastValue = inputRange.value;
-
 			inputRange.dispatchEvent(new Event("change"));
 		}
+
+		updateStyles();
 	};
 
-	const onChange = () => {
+	const onChange = (event: Event) => {
+		if (preventChange) {
+			console.warn("on change prevent default");
+			event.preventDefault();
+			event.stopPropagation();
+			preventChange = false;
+
+			resetValueOnTouch();
+
+			return;
+		}
+
+		console.log("onChange");
 		lastValue = inputRange.value;
 		updateStyles();
 	};
 
-	trigger.label.addEventListener("click", updateValue, true);
+	const resetValueOnTouch = () => {
+		console.warn("resetValueOnTouch", lastValue, inputRange.value);
 
-	inputRange.addEventListener("change", onChange);
-	trigger.input.addEventListener("touchmove", updateValue, true);
+		const resetToValue = lastValue;
+		inputRange.value = resetToValue;
+		updateStyles();
+
+		requestAnimationFrame(() => {
+			if (lastValue !== resetToValue) {
+				return;
+			}
+
+			console.warn("rAF resetValueOnTouch");
+
+			inputRange.value = resetToValue;
+			updateStyles();
+		});
+	};
+
+	const onTouchStart = (event: TouchEvent) => {
+		preventChange = false;
+		console.log("onTouchStart", event.touches[0]);
+
+		if (event.target === trigger.label) {
+			return resetValueOnTouch();
+		}
+
+		updateValue(event);
+	};
+
+	const onTouchEnd = (event: TouchEvent) => {
+		console.log("onTouchEnd");
+
+		if (event.target === trigger.label) {
+			preventChange = true;
+			return resetValueOnTouch();
+		}
+	};
+
+	const onTouchMove = (event: TouchEvent) => {
+		console.log("onTouchMove", event.touches[0]);
+
+		if (event.target === trigger.label) {
+			return resetValueOnTouch();
+		}
+
+		updateValue(event);
+	};
+
+	const onClick = (event: MouseEvent) => {
+		console.log("onClick", event.target);
+		updateValue(event);
+	};
 
 	const [updateStyles, disposeStyles] = registerStyleUpdater(
-		trigger.input,
+		trigger.clip,
 		() => {
 			const { width, height, borderRadius } = getPseudoStyles(
 				inputRange,
@@ -86,11 +148,12 @@ function handleInputRange(inputRange: HTMLInputElement) {
 			const min = Number.parseFloat(inputRange.min) || 0;
 			const max = Number.parseFloat(inputRange.max) || 100;
 			const value = Number.parseFloat(inputRange.value);
+			const percentage = (value - min) / (max - min);
 
-			const left = `calc(${((value - min) / (max - min)) * 100}% - ${width / 2}px)`;
+			const left = `calc(${percentage * 100}% - ${width * percentage}px)`;
 
 			return [
-				"all: unset",
+				"all: revert",
 				"position: absolute",
 				`left: ${left}`,
 				`width: ${width}px`,
@@ -100,12 +163,22 @@ function handleInputRange(inputRange: HTMLInputElement) {
 		},
 	);
 
+	inputRange.addEventListener("change", onChange, true);
+	inputRange.addEventListener("click", onClick, true);
+
+	trigger.label.addEventListener("touchstart", onTouchStart, true);
+	trigger.label.addEventListener("touchmove", onTouchMove, true);
+	trigger.label.addEventListener("touchend", onTouchEnd, true);
+
 	return () => {
 		disposeStyles();
 
-		trigger.label.removeEventListener("click", updateValue);
-		trigger.input.removeEventListener("touchmove", updateValue);
-		inputRange.removeEventListener("change", updateStyles);
+		inputRange.removeEventListener("change", onChange);
+		inputRange.removeEventListener("click", onClick);
+
+		trigger.label.removeEventListener("touchstart", onTouchStart);
+		trigger.label.removeEventListener("touchmove", onTouchMove);
+		trigger.label.removeEventListener("touchend", onTouchEnd);
 	};
 }
 
@@ -116,19 +189,24 @@ export function handleInputable(element: HTMLElement) {
 		return dispose;
 	}
 
-	const triggers = clickableTriggers.get(element);
-	if (!triggers || !isInputableElement(element)) {
+	const trigger = clickableTriggers.get(element);
+	if (!trigger || !isInputableElement(element)) {
 		return;
 	}
 
-	const onClick = () => {
+	const onClick = (event: MouseEvent) => {
+		if (event.target !== trigger.label) {
+			return;
+		}
+
+		console.log("focus inputable", element);
 		element.focus();
 	};
 
-	triggers.label.addEventListener("click", onClick);
+	trigger.label.addEventListener("click", onClick, true);
 
 	return () => {
-		triggers.label.removeEventListener("click", onClick);
+		trigger.label.removeEventListener("click", onClick);
 	};
 }
 

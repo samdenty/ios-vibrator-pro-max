@@ -1,51 +1,257 @@
+import {
+	backgroundPopup,
+	blockMainThread,
+	enableMainThreadBlocking,
+	polyfillKind,
+	uuid,
+} from "./options.js";
 import { type Vibration, trimVibrations } from "./utils/merge-vibrations.js";
 
-export const ignoredElements = new WeakSet<HTMLElement>([]);
-export const trigger = createVibrationTrigger();
-
-let vibration: Vibration = [Date.now(), []];
-
 const MAGIC_NUMBER = 26.26;
+const GRANT_TIMEOUT = 850;
 
-export function createVibrationTrigger() {
-	const label = document.createElement("label");
+export const ignoredElements = new WeakSet<HTMLElement>([]);
+export const rootTrigger = createVibrationTrigger();
+export const hiddenTrigger = createVibrationTrigger();
 
-	setTimeout(() => {
-		label.tabIndex = -1;
-		label.ariaHidden = "true";
-	});
-
-	const input = document.createElement("input");
-	input.type = "checkbox";
-	input.setAttribute("style", "display: none !important");
-	input.setAttribute("switch", "");
-
-	input.addEventListener("touchstart", (event) => {
-		return shouldVibrate();
-	});
-
-	label.appendChild(input);
-
-	ignoredElements.add(label);
-
-	label.addEventListener("click", () => {
-		return shouldVibrate();
-	});
-
-	return { label, input };
-}
+let timer: any;
+let lastGrant: number | null = null;
+let vibration: Vibration = [Date.now(), []];
+let popupConnected = false;
 
 export function vibrate(patterns: number[]) {
 	vibration = [Date.now(), patterns];
+
+	if (backgroundPopup) {
+		fetch(`https://api.vibrator.dev/${uuid}`, {
+			method: "POST",
+			body: JSON.stringify(vibration),
+		}).then((res) => {
+			popupConnected = res.ok;
+		});
+	}
 }
 
 export function shouldVibrate() {
-	return true;
-
 	vibration = [
 		Date.now(),
 		trimVibrations(Date.now() - vibration[0], vibration[1]),
 	];
 
 	return vibration[1][0] > 0;
+}
+
+export function createVibrationTrigger() {
+	const label = document.createElement("label");
+
+	const clip = document.createElement("div");
+	clip.setAttribute("style", "display: none !important");
+
+	const input = document.createElement("input");
+	input.type = "checkbox";
+	input.setAttribute("switch", "");
+
+	setTimeout(() => {
+		label.tabIndex = -1;
+		label.ariaHidden = "true";
+
+		input.tabIndex = -1;
+		input.ariaHidden = "true";
+	});
+
+	clip.appendChild(input);
+	label.appendChild(clip);
+
+	ignoredElements.add(label);
+	ignoredElements.add(input);
+	ignoredElements.add(clip);
+
+	return { label, input, clip };
+}
+
+// Authorization handler
+export async function authorizeVibrations({ target, isTrusted }: UIEvent) {
+	if (
+		target === hiddenTrigger.label ||
+		target === hiddenTrigger.input ||
+		(backgroundPopup && !popupConnected && lastGrant) ||
+		!isTrusted
+	) {
+		return;
+	}
+
+	lastGrant = Date.now();
+
+	allowVibrationsDuringGrant();
+
+	if (backgroundPopup && !popupConnected) {
+		enableMainThreadBlocking(true);
+
+		vibration = [Date.now(), []];
+
+		window.open(
+			`https://api.vibrator.dev/redirect#${location.href}`,
+			"_blank",
+			"noopener noreferrer",
+		);
+
+		document.body.innerText = "📳";
+		document.body.style.all = "unset";
+		document.body.style.display = "flex";
+		document.body.style.justifyContent = "center";
+		document.body.style.alignItems = "center";
+		document.body.style.backgroundColor = "white";
+		document.body.style.color = "white";
+		document.body.style.fontSize = `${Math.min(window.innerWidth, window.innerHeight) / 2}px`;
+
+		document.title = "ios-vibrator-pro-max 📳";
+	}
+}
+
+async function allowVibrationsDuringGrant() {
+	let adjustment = 0;
+	let lastFetch = 0;
+
+	// Tracking variables for adaptive polling
+	const networkLatencies = [100]; // Initial assumption: 100ms latency
+	let avgLatency = 100;
+	let noVibrationCount = 0;
+	const MAX_NO_VIBRATION_WAIT = 40; // Max wait time when no vibrations (ms)
+
+	function fetchLatest() {
+		try {
+			lastFetch = Date.now();
+
+			const xhr = new XMLHttpRequest();
+			xhr.open("GET", `https://api.vibrator.dev/${uuid}`, false); // false makes the request synchronous
+			xhr.send(null);
+
+			const response = JSON.parse(xhr.responseText);
+
+			if (response === null) {
+				window.close();
+			}
+
+			// Check if this was a successful update with new vibration data
+			const [start, newPatterns] = response;
+
+			// We got new vibration data
+			noVibrationCount = 0;
+			vibration = [Date.now(), trimVibrations(Date.now() - start, newPatterns)];
+			if (!vibration[1].length) {
+				vibration = [Date.now(), newPatterns];
+			}
+		} catch {
+			// ignore
+		} finally {
+			const latency = Date.now() - lastFetch;
+
+			// Update network latency tracking
+			networkLatencies.push(latency);
+
+			if (networkLatencies.length > 10) {
+				networkLatencies.shift();
+			}
+
+			avgLatency =
+				networkLatencies.reduce((sum, val) => sum + val, 0) /
+				networkLatencies.length;
+
+			return -latency;
+		}
+	}
+
+	while (true) {
+		vibration = [
+			Date.now(),
+			trimVibrations(Date.now() - vibration[0], vibration[1]),
+		];
+
+		const [vibrateMs, waitMs] = vibration[1] as (number | undefined)[];
+
+		if (vibrateMs == null) {
+			// Determine wait time based on network conditions and vibration history
+			const waitDuration =
+				noVibrationCount > 5
+					? Math.min(MAX_NO_VIBRATION_WAIT, avgLatency * 0.5) // Slower polling when no vibrations for a while
+					: Math.min(MAX_NO_VIBRATION_WAIT * 0.5, avgLatency * 0.3); // More aggressive polling when we expect vibrations
+
+			const adjustment = backgroundPopup === true ? fetchLatest() : 0;
+
+			await wait(waitDuration + adjustment);
+
+			continue;
+		}
+
+		const vibrate = vibrateMs > 0;
+		const waitTime = (vibrate ? MAGIC_NUMBER : (waitMs ?? 0)) + adjustment;
+
+		if (vibrate) {
+			hiddenTrigger.label.click();
+		}
+
+		// If the wait time is long enough, schedule another fetch during it
+		if (!vibrate && backgroundPopup === true && waitTime > avgLatency * 1.5) {
+			adjustment = fetchLatest();
+			adjustment = blockingWait(waitTime + adjustment);
+		} else {
+			adjustment = await wait(waitTime);
+		}
+	}
+}
+
+function getTimeUntilGrantExpires(): number {
+	if (polyfillKind === "full" || popupConnected) {
+		return Number.POSITIVE_INFINITY;
+	}
+
+	if (!lastGrant) {
+		return 0;
+	}
+
+	return Math.max(
+		0,
+		(backgroundPopup ? 250 : GRANT_TIMEOUT) - (Date.now() - lastGrant),
+	);
+}
+
+async function wait(duration: number) {
+	const grantTimeout = getTimeUntilGrantExpires();
+
+	if (blockMainThread && grantTimeout <= 0) {
+		return blockingWait(duration);
+	}
+
+	if (!blockMainThread || grantTimeout > duration) {
+		return asyncWait(duration);
+	}
+
+	const adjustment = await asyncWait(grantTimeout);
+	const wait = duration - grantTimeout - adjustment;
+	return blockingWait(wait);
+}
+
+function blockingWait(ms: number) {
+	if (ms < 0) {
+		return ms;
+	}
+
+	const start = Date.now();
+
+	// vite removes this while loop for some reason
+	// so we use eval instead
+	new Function("start", "ms", "while (Date.now() - start < ms) {}")(start, ms);
+
+	return 0;
+}
+
+async function asyncWait(ms: number) {
+	const start = Date.now();
+
+	await new Promise<void>((resolve) => {
+		clearTimeout(timer);
+		timer = setTimeout(resolve, ms);
+	});
+
+	return ms - (Date.now() - start);
 }

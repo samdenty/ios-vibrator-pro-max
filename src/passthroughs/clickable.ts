@@ -1,76 +1,132 @@
-import { registerStyleUpdater } from "../utils/styles/update-styles.js";
+import { registerStyleUpdater } from "../utils/index.js";
 import {
 	createVibrationTrigger,
+	hiddenTrigger,
 	ignoredElements,
-	trigger,
+	rootTrigger,
+	shouldVibrate,
 } from "../vibration.js";
+import { cloneMouseEvent } from "./mouse.js";
+import { isNativeMovableElement } from "./movable.js";
 
 export const triggersRoot = document.createElement("div");
 triggersRoot.setAttribute("for", "ios-vibrator-pro-max-content-triggers");
+triggersRoot.appendChild(hiddenTrigger.label);
 ignoredElements.add(triggersRoot);
 
 export const CLICKABLE = ["button", "input", "textarea", "select", "label"];
 
 export const clickableTriggers = new Map<
 	HTMLElement,
-	{ label: HTMLLabelElement; input: HTMLInputElement }
+	{
+		label: HTMLLabelElement;
+		input: HTMLInputElement;
+		clip: HTMLDivElement;
+	}
 >();
 
-let anchorId = 1;
-
-export function handleClickable(element: HTMLElement) {
+function isClickableElement(element: HTMLElement) {
 	const tagName = element.tagName.toLowerCase();
 	if (element.draggable) {
 		return;
 	}
 
-	if (!CLICKABLE.includes(tagName) && element.role !== "button") {
+	if (element.role !== "button" && !CLICKABLE.includes(tagName)) {
+		return false;
+	}
+
+	if (isNativeMovableElement(element)) {
+		return false;
+	}
+
+	return true;
+}
+
+let anchorId = 1;
+let ignoreRootClick = false;
+
+rootTrigger.label.addEventListener("click", (event) => {
+	if (event.target !== rootTrigger.label) {
+		return;
+	}
+
+	console.log("clicked on root label", event.target);
+
+	if (ignoreRootClick) {
+		console.log("ignore root click");
+		return;
+	}
+
+	if (shouldVibrate()) {
+		console.log("vibrating");
+		return;
+	}
+
+	if (isNativeMovableElement(event.target as HTMLElement)) {
+		console.log(
+			"not preventing vibration on root trigger because it is a native movable element",
+			event.target,
+		);
+		return;
+	}
+
+	console.log("prevent vibration on root trigger");
+	event.preventDefault();
+});
+
+export function handleClickable(element: HTMLElement) {
+	if (!isClickableElement(element)) {
 		return;
 	}
 
 	const trigger = createVibrationTrigger();
 	const anchorName = `--ios-vibrator-pro-max-${anchorId++}`;
 
-	let transparentHighlight = false;
-	let touchMove = false;
+	let stopPointerEvents = false;
 
 	function onTouchStart(event: TouchEvent) {
-		touchMove = false;
-
 		const { clientX, clientY } = event.touches[0];
 
-		transparentHighlight = true;
+		stopPointerEvents = true;
 
 		updateStyles();
 
 		const touchedElement = document.elementFromPoint(clientX, clientY);
 
 		if (touchedElement === element) {
-			transparentHighlight = false;
+			stopPointerEvents = false;
 			updateStyles();
 		}
 	}
 
-	function onTouchMove() {
-		touchMove = true;
+	function onTouchEnd() {
+		stopPointerEvents = false;
+		updateStyles();
 	}
 
 	function onClick(event: MouseEvent) {
-		transparentHighlight = false;
-		updateStyles();
-
-		if (touchMove || event.target !== trigger.input) {
+		if (event.target !== trigger.label) {
 			return;
 		}
 
-		setTimeout(() => {
-			element.click();
-		});
+		console.log("trigger synthetic click on ", element);
+
+		click(event);
+
+		if (!shouldVibrate()) {
+			event.preventDefault();
+		}
 	}
 
-	trigger.input.addEventListener("click", onClick, true);
+	function click(event: MouseEvent) {
+		ignoreRootClick = true;
+		element.dispatchEvent(cloneMouseEvent("click", event));
+		ignoreRootClick = false;
+	}
+
 	trigger.label.addEventListener("touchstart", onTouchStart, true);
-	trigger.label.addEventListener("touchmove", onTouchMove, true);
+	trigger.label.addEventListener("touchend", onTouchEnd, true);
+	trigger.label.addEventListener("click", onClick, true);
 
 	const computedStyle = getComputedStyle(element);
 
@@ -95,10 +151,10 @@ export function handleClickable(element: HTMLElement) {
 				"left: anchor(left)",
 				"bottom: anchor(bottom)",
 				"right: anchor(right)",
-				"overflow: hidden",
 				`position-anchor: ${anchorName}`,
 				`border-radius: ${computedStyle.borderRadius}`,
-				`-webkit-tap-highlight-color: ${transparentHighlight ? "transparent" : highlightColor}`,
+				`pointer-events: ${stopPointerEvents ? "none" : "auto"}`,
+				`-webkit-tap-highlight-color: ${highlightColor}`,
 			];
 		},
 	);
@@ -112,9 +168,9 @@ export function handleClickable(element: HTMLElement) {
 	return () => {
 		disposeStyles();
 
-		trigger.input.removeEventListener("click", onClick);
 		trigger.label.removeEventListener("touchstart", onTouchStart);
-		trigger.label.removeEventListener("touchmove", onTouchMove);
+		trigger.label.removeEventListener("touchend", onTouchEnd);
+		trigger.label.removeEventListener("click", onClick);
 
 		clickableTriggers.delete(element);
 
@@ -127,10 +183,10 @@ export function handleClickable(element: HTMLElement) {
  *
  * The wrapping div on body is a button so it can receive false clicks.
  */
-trigger.label.addEventListener(
+rootTrigger.label.addEventListener(
 	"click",
 	(event: MouseEvent) => {
-		if (event.target !== trigger.label) {
+		if (event.target !== rootTrigger.label) {
 			return;
 		}
 
@@ -139,20 +195,21 @@ trigger.label.addEventListener(
 		const rects = [...clickableTriggers].map(([element, trigger]) => {
 			const rect = element.getBoundingClientRect();
 
-			return [
-				Math.max(Math.abs(rect.x - clientX), Math.abs(rect.y - clientY)),
-				() => {
-					trigger.label.click();
-				},
-			] as const;
+			const dx = Math.max(rect.left - clientX, 0, clientX - rect.right);
+			const dy = Math.max(rect.top - clientY, 0, clientY - rect.bottom);
+			const distance = Math.sqrt(dx * dx + dy * dy);
+
+			return [distance, trigger] as const;
 		});
 
 		rects.sort(([d1], [d2]) => d1 - d2);
 
-		const [distance, click] = rects[0];
+		const [distance, trigger] = rects[0];
 
-		if (distance && distance <= 30) {
-			click();
+		if (distance && distance <= 15) {
+			console.log("element is nearby so simulating click on ", trigger.label);
+			const clickEvent = cloneMouseEvent("click", event);
+			trigger.label.dispatchEvent(clickEvent);
 		}
 	},
 	true,

@@ -1,11 +1,9 @@
 import { handleClickable } from "./clickable.js";
-import { ignoredElements, trigger } from "../vibration.js";
+import { ignoredElements, rootTrigger } from "../vibration.js";
 import { handleTouchEvents } from "./touch.js";
 import { handleInputable } from "./inputable.js";
 import { handleMouseEvents } from "./mouse.js";
 import { handleMovable } from "./movable.js";
-
-export const rootBody = trigger.label;
 
 const elementDisposers = new WeakMap<HTMLElement, () => void>();
 
@@ -21,7 +19,7 @@ export function handleAddElement(
 		parents = [];
 
 		let parent = element.parentElement;
-		while (parent && parent !== rootBody) {
+		while (parent && parent !== rootTrigger.label) {
 			parents.push(parent);
 			parent = parent.parentElement;
 		}
@@ -34,7 +32,7 @@ export function handleAddElement(
 	}
 
 	const disposers = [
-		handleClickable(element, parents),
+		handleClickable(element),
 		handleInputable(element),
 		handleTouchEvents(element),
 		handleMouseEvents(element),

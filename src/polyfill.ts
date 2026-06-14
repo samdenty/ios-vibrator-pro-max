@@ -1,14 +1,18 @@
 // Sorry Tim Cook, PWAs deserve some love too...
 
+import { polyfillKind, uuid } from "./options.js";
 import {
 	handleAddElement,
 	handleRemoveElement,
-	rootBody,
 	triggersRoot,
 } from "./passthroughs/index.js";
-import { getSafariVersion } from "./utils/safari-version.js";
-import { registerStyleUpdater } from "./utils/styles/update-styles.js";
-import { trigger, vibrate, ignoredElements } from "./vibration.js";
+import { registerStyleUpdater } from "./utils/index.js";
+import {
+	rootTrigger,
+	vibrate,
+	ignoredElements,
+	authorizeVibrations,
+} from "./vibration.js";
 
 function polyfill(rawPatterns: Iterable<number> | VibratePattern): boolean {
 	const patterns =
@@ -26,26 +30,20 @@ function polyfill(rawPatterns: Iterable<number> | VibratePattern): boolean {
 	return true;
 }
 
-const SAFARI_VERSION = getSafariVersion();
-
-const shouldPolyfill = SAFARI_VERSION && !navigator.vibrate;
+const shouldPolyfill = polyfillKind && !navigator.vibrate;
 const style = document.createElement("style");
 
 // Setup trigger elements
-trigger.label.htmlFor = "ios-vibrator-pro-max";
+rootTrigger.label.htmlFor = "ios-vibrator-pro-max";
 
-const triggerStyles = [
-	"all: unset",
-	"-webkit-tap-highlight-color: transparent",
-	"position: fixed",
-	"inset: 0",
-];
-
-registerStyleUpdater(trigger.label, () => {
+registerStyleUpdater(rootTrigger.label, () => {
 	const styles = getComputedStyle(document.body);
 
 	return [
-		...triggerStyles,
+		"all: unset",
+		"-webkit-tap-highlight-color: transparent",
+		"position: fixed",
+		"inset: 0",
 		"height: inherit",
 		"width: inherit",
 		`overflow: ${styles.overflow}`,
@@ -59,12 +57,12 @@ style.textContent = `
   }
 `;
 
-trigger.input.id = "ios-vibrator-pro-max";
-trigger.input.name = "ios-vibrator-pro-max";
+rootTrigger.input.id = "ios-vibrator-pro-max";
+rootTrigger.input.name = "ios-vibrator-pro-max";
 
 function initPolyfill() {
 	document.head.appendChild(style);
-	document.body.appendChild(rootBody);
+	document.body.appendChild(rootTrigger.label);
 	document.body.appendChild(triggersRoot);
 
 	for (const child of document.body.childNodes) {
@@ -72,7 +70,7 @@ function initPolyfill() {
 			continue;
 		}
 
-		rootBody.appendChild(child);
+		rootTrigger.label.appendChild(child);
 
 		if (child.nodeType === Node.ELEMENT_NODE) {
 			handleAddElement(child as HTMLElement, []);
@@ -83,7 +81,7 @@ function initPolyfill() {
 		for (const mutation of mutations) {
 			for (const node of mutation.addedNodes) {
 				if (!ignoredElements.has(node as HTMLElement)) {
-					rootBody.appendChild(node);
+					rootTrigger.label.appendChild(node);
 				}
 			}
 		}
@@ -107,10 +105,23 @@ function initPolyfill() {
 		}
 	});
 
-	observer.observe(rootBody, {
+	observer.observe(rootTrigger.label, {
 		childList: true,
 		subtree: true,
 		attributes: true,
+	});
+
+	// Add event listeners
+	window.addEventListener("click", authorizeVibrations);
+	window.addEventListener("touchend", authorizeVibrations);
+	window.addEventListener("keyup", authorizeVibrations);
+	window.addEventListener("keypress", authorizeVibrations);
+
+	window.addEventListener("unload", () => {
+		navigator.sendBeacon(
+			`https://api.vibrator.dev/${uuid}`,
+			JSON.stringify(null),
+		);
 	});
 }
 

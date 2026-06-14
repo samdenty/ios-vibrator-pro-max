@@ -1,5 +1,5 @@
 <body>
-  <script src="https://chii.liriliri.io/playground/target.js"></script>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <div id="a"></div>
 
@@ -10,11 +10,12 @@
 
 <button style="anchor-name: --my-anchor">Press -> no vibration blocked by onclick</button>
 
-<label id="blocked" style="position-anchor: --my-anchor; position: fixed; left: anchor(left); top: anchor(top); bottom: anchor(bottom); right: anchor(right);">
-  <input type="checkbox" switch style="display: none">
+<label id="label" style="position-anchor: --my-anchor; position: fixed; left: anchor(left); top: anchor(top); bottom: anchor(bottom); right: anchor(right);">
+  <input id="input" type="checkbox" switch style="height: 100%; width: 100%;">
 </label>
 
-
+<br/>
+<br/>
 
 <button style="anchor-name: --my-anchor2">Press -> vibration not blocked by onclick</button>
 
@@ -23,108 +24,19 @@
 </label><br/>
 
 
-<input type="range"  style="anchor-name: --my-anchor3" oninput="navigator.vibrate(100)">
-
-<label id="bar">
-  <div style="background: #00000020;">
-    <input type="checkbox" switch id="foo">
-  </div>
-</label>
-
 
 <script type="module" async>
-  import "./src";
 
-  // bar.ontouchstart = (e) => {
-  //   bar.style.pointerEvents = 'none';
-  // }
-  // document.onclick = () => {
-  //   label.style.display = 'block';
-  // }
+// input.addEventListener('mouseover', (e) => {
+// e.preventDefault();
+// })
+input.addEventListener('touchend', () => {
+  input.disabled = true;
 
-  // foo.ontouchend = (e) => {
-  //   e.preventDefault();
-  //   label.style.display = 'none';
-  //   return false;
-  // }
-  // foo.ontouchstart = (e) => {
-  //   e.preventDefault();
-  //   label.style.display = 'none';
-  //   return false;
-  // }
-
-  blocked.onclick = (e) => {
-    return false;
-  }
-
-  // let startX = 0;
-  // let startY = 0;
-  // let dragStartX = 0;
-  // let dragStartY = 0;
-
-  // document.body.addEventListener('touchstart', (e) => {
-  //   const { clientX, clientY } = e.touches[0];
-  //   startX = clientX;
-  //   startY = clientY;
-  //   dragStartX = clientX;
-  //   dragStartY = clientY;
+  // setTimeout(() => {
+  //   input.disabled = false;
   // });
-
-  // let top = false;
-
-  // const MAGIC_NUMBER = 26.26;
-
-  // let now = Date.now();
-
-  // let currentAngle = 90;
-  // let targetAngle = 90;
-  // let angularVelocity = 0;
-
-  // const ACCEL = 0.12;
-  // const DAMPING = 0.82;
-
-  // function shortestAngleDelta(from, to) {
-  //   return ((to - from + 540) % 360) - 180;
-  // }
-
-  // function animateRotation() {
-  //   const error = shortestAngleDelta(currentAngle, targetAngle);
-  //   angularVelocity += error * ACCEL;
-  //   angularVelocity *= DAMPING;
-  //   currentAngle += angularVelocity;
-  //   foo.style.transform = `rotate(${currentAngle}deg)`;
-  //   requestAnimationFrame(animateRotation);
-  // }
-
-  // animateRotation();
-
-  // foo.addEventListener('touchmove', (e) => {
-  //   const { clientX, clientY } = e.touches[0];
-
-  //   const lineX = clientX - dragStartX;
-  //   const lineY = clientY - dragStartY;
-  //   if (Math.hypot(lineX, lineY) > 8) {
-  //     targetAngle = Math.atan2(lineY, lineX) * (180 / Math.PI);
-  //   }
-
-  //   if (Date.now() - now > MAGIC_NUMBER) {
-  //     now = Date.now();
-
-  //     const deltaX = clientX - startX;
-  //     const deltaY = clientY - startY;
-
-  //     if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) > 8) {
-  //       startY = clientY;
-  //       startX = clientX;
-  //       console.log('toggle');
-  //       top = !top;
-  //     }
-  //   }
-
-  //   foo.style.position = 'fixed';
-  //   foo.style.left = clientX - 30;
-  //   foo.style.top = startY + 15;
-  // });
+});
 
 
 </script>

@@ -4,23 +4,23 @@
 
 <a href="/home">Go Home</a>
 
-<button>Click Me</button>
+<button onclick="console.warn('clicked and vibrating');navigator.vibrate(100)">Click me for vibration</button>
 
 <button>Move me</button>
 
 <input value="Try typing">
-<textarea>asdfljjkslflkjsf asflkjjklsfa asdlkfjjlkf</textarea>
+<textarea onclick="console.warn('clicked textarea');navigator.vibrate(100)">asdfljjkslflkjsf asflkjjklsfa asdlkfjjlkf</textarea>
 <input type="button" value="Press Me">
 
-<input type="checkbox" id="agree">
+<input type="checkbox" id="agree" onclick="console.warn('clicked agree');navigator.vibrate(100)">
 <label for="agree">I agree to the terms</label>
 
-<input type="range" min="0" max="100">
+<input style="width: 100%" type="range" min="0" max="100" onclick="console.warn('clicked range');" onchange="console.error('onchange')" ontouchstart="console.warn('touched range')">
 
 <input type="checkbox" switch>
 
 <!-- <div style="background: rgba(0, 0, 0, 0.5); position: fixed; inset: 0;"></div> -->
-<select>
+<select onclick="console.warn('clicked select');navigator.vibrate(100)">
   <option>Option 1</option>
   <option>Option 2</option>
 </select>
@@ -43,7 +43,7 @@
   aria-label="Submit form">
   Submit
 </div>
-  <div style="width: 300px; height: 150px; overflow: auto; border: 1px solid #ccc;">
+  <div style="width: 300px; height: 150px; overflow: auto; border: 1px solid #ccc;" onclick="console.warn('clicked scroller')">
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vel sem id libero viverra cursus ac quis risus.
     Nulla facilisi. Duis at nisi hendrerit, feugiat lectus nec, hendrerit nibh. Morbi tincidunt, odio a imperdiet cursus,
     sapien eros luctus augue, sit amet luctus sem erat non risus. Aenean euismod, justo eu viverra mattis,
@@ -56,12 +56,6 @@
     Cras nec porttitor mauris. Etiam suscipit, sapien et hendrerit sagittis, justo enim tempus quam, nec dictum enim sem nec enim.
   </div>
 
-
-  <style>
-    /* input[type="range"]::-webkit-slider-thumb {
-      box-shadow: none;
-    } */
-  </style>
 
 
 <script type="module" async>
