@@ -1,6 +1,7 @@
 import "./polyfill";
 
 export {
+	enableDebugMode,
 	enableBackgroundPopup,
 	hasBackgroundPopup,
 	enableMainThreadBlocking,

@@ -4,8 +4,16 @@ import { handleTouchEvents } from "./touch";
 import { handleInputable } from "./inputable";
 import { handlePointerEvents } from "./pointer";
 import { handleMovable } from "./movable";
+import { updateStyles } from "../../utils";
 
 const elementDisposers = new WeakMap<HTMLElement, () => void>();
+
+export let debugMode = false;
+
+export function enableDebugMode(enabled = true) {
+	debugMode = enabled;
+	updateStyles();
+}
 
 export function handleAddElement(
 	element: HTMLElement,

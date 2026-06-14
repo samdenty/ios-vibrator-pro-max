@@ -1,3 +1,4 @@
+import { debugMode } from ".";
 import { registerStyleUpdater } from "../../utils";
 import { shouldVibrate } from "../../vibration";
 import { clickableTriggers } from "./clickable";
@@ -141,9 +142,11 @@ export function handleMovable(element: HTMLElement) {
 	const [updateClipStyles, disposeClipStyles] = registerStyleUpdater(
 		trigger.clip,
 		() => {
+			const opacity = debugMode ? 0.4 : 0;
+
 			if (!touchStart) {
 				if (isInputRange) {
-					return ["overflow: hidden", "opacity: 0"];
+					return ["overflow: hidden", `opacity: ${opacity}`];
 				}
 
 				return [
@@ -151,7 +154,7 @@ export function handleMovable(element: HTMLElement) {
 					"width: 100%",
 					"height: 100%",
 					"overflow: hidden",
-					"opacity: 0",
+					`opacity: ${opacity}`,
 				];
 			}
 
@@ -173,7 +176,7 @@ export function handleMovable(element: HTMLElement) {
 				`top: ${top}px`,
 				`left: ${left}px`,
 				`transform: rotate(${angleDeg360}deg) translateX(${vibrate ? (checked ? width : -width) / 3 : width}px)`,
-				"opacity: 0",
+				`opacity: ${opacity}`,
 			];
 		},
 	);

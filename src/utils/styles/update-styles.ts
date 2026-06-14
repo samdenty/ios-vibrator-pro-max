@@ -22,7 +22,7 @@ function applyStyles(
 	);
 }
 
-function updateStyles() {
+export function updateStyles() {
 	pendingUpdate = false;
 
 	for (const [element, callbacks] of elementCallbacks) {

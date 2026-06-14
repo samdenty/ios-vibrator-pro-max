@@ -3,6 +3,9 @@
 import { ElasticSlider } from "@/components/elastic-slider";
 import IOSSlider from "@/components/IOSSlider";
 import { useState } from "react";
+import { enableDebugMode } from "ios-vibrator-pro-max/src";
+
+enableDebugMode();
 
 export default function Home() {
 	const [value, setValue] = useState(0.1);
