@@ -1,17 +1,24 @@
 # `ios-vibrator-pro-max`
 
-[![npm version](https://img.shields.io/npm/v/ios-vibrator-pro-max.svg?style=flat-square)](https://www.npmjs.com/package/ios-vibrator-pro-max)
-[![npm downloads](https://img.shields.io/npm/dm/ios-vibrator-pro-max.svg?style=flat-square)](https://www.npmjs.com/package/ios-vibrator-pro-max)
-[![Demo](https://img.shields.io/badge/Demo-blue.svg?style=flat-square)](https://ios-vibrate-api-demo.vercel.app/)
+[![npm downloads](https://www.shieldcn.dev/npm/dm/ios-vibrator-pro-max.svg?variant=branded&size=sm)](https://www.npmjs.com/package/ios-vibrator-pro-max)
+[![Total npm downloads](https://www.shieldcn.dev/npm/dw/ios-vibrator-pro-max.svg?variant=secondary&size=sm)](https://www.npmjs.com/package/ios-vibrator-pro-max)
+[![@samdenty on X](https://www.shieldcn.dev/x/follow/samdenty.svg?variant=branded&size=sm)](https://x.com/samdenty)
 
-
-Finally Safari added an unofficial™️ vibration API. I'm sorry to whoever who let this amazing feature/bug accidentally ship it's way into iOS 18. Tim cook please don't remove it, the web & PWAs need love too.
+iOS Safari implementation of `navigator.vibrate` — works inside `onClick`, `onTouchMove` and `onInput`.
 
 ```ts
 import "ios-vibrator-pro-max";
 
 navigator.vibrate(1000);
 ```
+
+## How it works
+
+This polyfill works by layering hidden input switches ontop of interactive elements in your application. When you call `navigator.vibrate` we have three methods of triggering a vibration:
+
+1. **`ontouchmove`** - We overlay a switch ontop of the draggable area and rapidly flip the position, so the browser thinks your finger is toggling the switch causing vibration.
+2. **`onclick`** - We wrap the entire DOM inside a label element and detect what element you click on. We then simulate clicks on the elements you were clicking on, and if your handler didn't cause a vibration we call `event.preventDefault()` on the wrapped DOM label to block the vibration.
+3. **Outside `onclick`** - We capture previous click interactions that are performed on any element, we then call `label.click()` repeatedly inside a `setTimeout` in that events handlers closure.
 
 ## ⚠️ Limitations
 

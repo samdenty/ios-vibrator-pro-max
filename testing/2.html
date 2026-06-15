@@ -1,0 +1,102 @@
+<body style="background: black;">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<a href="/home">Go Home</a>
+
+<button onclick="console.warn('clicked and vibrating');navigator.vibrate(100)">Click me for vibration</button>
+
+<button>Move me</button>
+
+<input value="Try typing">
+<textarea onclick="console.warn('clicked textarea');navigator.vibrate(100)">asdfljjkslflkjsf asflkjjklsfa asdlkfjjlkf</textarea>
+<input type="button" value="Press Me">
+
+<br/>
+<input type="checkbox" id="agree" onclick="console.warn('clicked agree');navigator.vibrate(100)">
+<label for="agree">I agree to the terms</label>
+
+<input style="width: 100%" type="range" min="0" max="100" onclick="console.warn('clicked range');" onchange="console.error('onchange')" ontouchstart="console.warn('touched range')" ontouchmove="console.warn('touch move'); navigator.vibrate(100)">
+<input class="ios-range" style="width: 100%" type="range" min="0" max="100" onclick="console.warn('clicked range');" onchange="console.error('onchange')" ontouchstart="console.warn('touched range')" oninput="console.warn('input'); navigator.vibrate(100)">
+
+<input type="checkbox" switch>
+
+<!-- <div style="background: rgba(0, 0, 0, 0.5); position: fixed; inset: 0;"></div> -->
+<select onclick="console.warn('clicked select');navigator.vibrate(100)">
+  <option>Option 1</option>
+  <option>Option 2</option>
+</select>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+  <button id="button">hello</button>
+  <a id="link" href="#foo2">link</a>
+  <div style="background: red" onclick="navigator.vibrate(100)">vibrate when you click</div>
+  <div
+  class="btn"
+  role="button"
+  tabindex="0"
+  aria-label="Submit form">
+  Submit
+</div>
+  <div style="width: 300px; height: 150px; overflow: auto; border: 1px solid #ccc;" onclick="console.warn('clicked scroller')">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vel sem id libero viverra cursus ac quis risus.
+    Nulla facilisi. Duis at nisi hendrerit, feugiat lectus nec, hendrerit nibh. Morbi tincidunt, odio a imperdiet cursus,
+    sapien eros luctus augue, sit amet luctus sem erat non risus. Aenean euismod, justo eu viverra mattis,
+    nisl dolor gravida orci, in blandit ex sem a elit. Nullam feugiat enim ac risus facilisis luctus. Quisque id imperdiet erat.
+    <br><br>
+    Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Praesent sagittis mauris
+    ac velit vehicula, nec varius enim cursus. Suspendisse potenti. Sed pellentesque magna vitae diam egestas, sed facilisis
+    leo luctus. Pellentesque lacinia, velit in pulvinar dictum, ex lacus imperdiet enim, a pulvinar risus ipsum in lacus.
+    <br><br>
+    Cras nec porttitor mauris. Etiam suscipit, sapien et hendrerit sagittis, justo enim tempus quam, nec dictum enim sem nec enim.
+  </div>
+
+  <style>
+    /* iOS-style range input used in the usage examples */
+.ios-range {
+	-webkit-appearance: none;
+	appearance: none;
+	height: 8px;
+	border-radius: 9999px;
+	background: rgba(255, 255, 255, 0.12);
+	outline: none;
+	cursor: pointer;
+}
+
+.ios-range::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 24px;
+	height: 24px;
+	border-radius: 9999px;
+	background: linear-gradient(to bottom, #fcd34d, #f97316);
+	box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
+	transition: transform 0.1s ease;
+}
+
+.ios-range::-webkit-slider-thumb:active {
+	transform: scale(1.15);
+}
+
+.ios-range::-moz-range-thumb {
+	width: 24px;
+	height: 24px;
+	border: none;
+	border-radius: 9999px;
+	background: linear-gradient(to bottom, #fcd34d, #f97316);
+	box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
+}
+  </style>
+
+<script type="module" async>
+  import { enableDebugMode } from "./src";
+  enableDebugMode(true);
+</script>
+</body>

@@ -1,2 +1,10 @@
-export * from "./pro-max-vibrator.js";
-export * from "./mergeVibrations.js";
+import "./polyfill";
+
+export {
+	enableDebugMode,
+	enableBackgroundPopup,
+	hasBackgroundPopup,
+	enableMainThreadBlocking,
+} from "./methods";
+
+export { mergeVibrations, trimVibrations, polyfillKind } from "./utils";

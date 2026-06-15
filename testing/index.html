@@ -1,0 +1,27 @@
+<body>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div id="a"></div>
+
+<input type="range" oninput="navigator.vibrate(100)">
+<input value="Try typing" oninput="navigator.vibrate(100)" />
+<button onclick="navigator.vibrate([500,500,500,500,500])" style="margin-bottom: 200px">Click me</button>
+
+
+<button style="anchor-name: --my-anchor">Press -> no vibration blocked by onclick</button>
+
+
+<div style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);">
+  <input id="input" type="checkbox" switch>
+  <div style="position: absolute; inset: 0;margin-top: 50px;touch-action: none;"></div>
+</div>
+
+
+
+
+<script type="module" async>
+
+
+
+</script>
+</body>
