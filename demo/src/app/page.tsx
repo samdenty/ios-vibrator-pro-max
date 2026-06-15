@@ -3,9 +3,6 @@
 import "ios-vibrator-pro-max/src";
 import { ElasticSlider } from "@/components/elastic-slider";
 import IOSSlider from "@/components/ios-slider";
-import { useState } from "react";
-import { TimePicker } from "@/components/time-picker";
-import { useSound } from "use-sound";
 import { ShimmeringText } from "@/components/shimmering-text";
 import {
 	SlideToUnlock,
@@ -13,6 +10,9 @@ import {
 	SlideToUnlockText,
 	SlideToUnlockTrack,
 } from "@/components/slide-to-unlock";
+import { TimePicker } from "@/components/time-picker";
+import { useState } from "react";
+import { useSound } from "use-sound";
 
 export default function Home() {
 	const [value, setValue] = useState(0.5);

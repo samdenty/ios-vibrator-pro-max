@@ -1,9 +1,9 @@
-import { handleClickable } from "./clickable";
-import { ignoredElements, rootTrigger } from "../../vibration";
-import { handleInputable } from "./inputable";
-import { forwardEvents } from "./forward-events";
-import { handleMovable } from "./movable";
 import { updateStyles } from "../../utils";
+import { ignoredElements, rootTrigger } from "../../vibration";
+import { handleClickable } from "./clickable";
+import { forwardEvents } from "./forward-events";
+import { handleInputable } from "./inputable";
+import { handleMovable } from "./movable";
 
 const elementDisposers = new WeakMap<HTMLElement, () => void>();
 

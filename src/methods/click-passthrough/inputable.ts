@@ -49,15 +49,6 @@ function handleInputRange(inputRange: HTMLInputElement) {
 
 		inputRange.value = `${inputRange.step === "any" ? newValue : Math.round(newValue / step) * step}`;
 
-		console.log(
-			"updateValue",
-			inputRange.value,
-			lastValue,
-			lastValue !== inputRange.value,
-			isClickEvent,
-			event.target,
-		);
-
 		if (lastValue !== inputRange.value && isClickEvent) {
 			lastValue = inputRange.value;
 			inputRange.dispatchEvent(new Event("change"));
@@ -68,7 +59,6 @@ function handleInputRange(inputRange: HTMLInputElement) {
 
 	const onChange = (event: Event) => {
 		if (preventChange) {
-			console.warn("on change prevent default");
 			event.preventDefault();
 			event.stopPropagation();
 			preventChange = false;
@@ -78,14 +68,11 @@ function handleInputRange(inputRange: HTMLInputElement) {
 			return;
 		}
 
-		console.log("onChange");
 		lastValue = inputRange.value;
 		updateStyles();
 	};
 
 	const resetValueOnTouch = () => {
-		console.warn("resetValueOnTouch", lastValue, inputRange.value);
-
 		const resetToValue = lastValue;
 		inputRange.value = resetToValue;
 		updateStyles();
@@ -95,8 +82,6 @@ function handleInputRange(inputRange: HTMLInputElement) {
 				return;
 			}
 
-			console.warn("rAF resetValueOnTouch");
-
 			inputRange.value = resetToValue;
 			updateStyles();
 		});
@@ -104,7 +89,6 @@ function handleInputRange(inputRange: HTMLInputElement) {
 
 	const onTouchStart = (event: TouchEvent) => {
 		preventChange = false;
-		console.log("onTouchStart", event.touches[0]);
 
 		if (event.target === trigger.label) {
 			return resetValueOnTouch();
@@ -114,8 +98,6 @@ function handleInputRange(inputRange: HTMLInputElement) {
 	};
 
 	const onTouchEnd = (event: TouchEvent) => {
-		console.log("onTouchEnd");
-
 		if (event.target === trigger.label) {
 			preventChange = true;
 			return resetValueOnTouch();
@@ -123,8 +105,6 @@ function handleInputRange(inputRange: HTMLInputElement) {
 	};
 
 	const onTouchMove = (event: TouchEvent) => {
-		console.log("onTouchMove", event.touches[0]);
-
 		if (event.target === trigger.label) {
 			return resetValueOnTouch();
 		}
@@ -133,7 +113,6 @@ function handleInputRange(inputRange: HTMLInputElement) {
 	};
 
 	const onClick = (event: MouseEvent) => {
-		console.log("onClick", event.target);
 		updateValue(event);
 	};
 
@@ -195,7 +174,6 @@ export function handleInputable(element: HTMLElement) {
 	}
 
 	const onClick = () => {
-		console.log("focus inputable", element);
 		element.focus();
 	};
 

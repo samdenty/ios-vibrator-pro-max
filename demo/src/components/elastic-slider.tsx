@@ -1,22 +1,22 @@
 "use client";
 
 import {
-	useCallback,
-	useEffect,
-	useLayoutEffect,
-	useRef,
-	useState,
-} from "react";
-import {
 	animate,
 	motion,
 	useMotionValue,
 	useReducedMotion,
 	useTransform,
 } from "motion/react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from "react";
 
-import { cn } from "@/lib/utils";
 import { useControllableState } from "@/hooks/use-controllable-state";
+import { cn } from "@/lib/utils";
 
 // Drag detection & rubber band
 const CLICK_THRESHOLD = 3;
@@ -41,7 +41,7 @@ function decimalsForStep(step: number): number {
 
 function roundValue(val: number, step: number): number {
 	const raw = Math.round(val / step) * step;
-	return parseFloat(raw.toFixed(decimalsForStep(step)));
+	return Number.parseFloat(raw.toFixed(decimalsForStep(step)));
 }
 
 // Magnetic snap to the nearest decile when within 3.125% of it.

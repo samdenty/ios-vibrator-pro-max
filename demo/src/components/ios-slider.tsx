@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import {
 	animate,
 	clamp,
@@ -11,6 +10,7 @@ import {
 	useMotionValueEvent,
 	useTransform,
 } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 
 const containerStyle: React.CSSProperties = {
 	width: 400,

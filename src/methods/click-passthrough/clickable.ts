@@ -74,25 +74,16 @@ let ignoreRootClick: boolean | "prevent" = false;
 
 rootTrigger?.label.addEventListener("click", (event) => {
 	if (isNativeMovableElement(event.target as HTMLElement)) {
-		console.log(
-			"not preventing vibration on root trigger because it is a native movable element",
-			event.target,
-		);
 		return;
 	}
 
 	if (ignoreRootClick) {
 		if (ignoreRootClick === "prevent") {
-			console.log("prevent root click");
 			event.preventDefault();
-		} else {
-			console.log("ignore root click");
 		}
 
 		return;
 	}
-
-	console.log("clicked on root label", event.target);
 
 	event.stopPropagation();
 
@@ -104,11 +95,9 @@ rootTrigger?.label.addEventListener("click", (event) => {
 	ignoreRootClick = false;
 
 	if (shouldVibrate()) {
-		console.log("vibrating");
 		return;
 	}
 
-	console.log("prevent vibration on root trigger");
 	event.preventDefault();
 });
 
@@ -158,8 +147,6 @@ export function handleClickable(element: HTMLElement) {
 		if (event.target !== trigger.label) {
 			return;
 		}
-
-		console.log("trigger synthetic click on ", element);
 
 		simulateClick(event);
 
@@ -278,7 +265,6 @@ rootTrigger?.label.addEventListener(
 		const [distance, trigger] = rects[0];
 
 		if (distance && distance <= 15) {
-			console.log("element is nearby so simulating click on ", trigger.label);
 			const clickEvent = clonePointerEvent("click", event);
 			trigger.simulateClick(clickEvent);
 		}

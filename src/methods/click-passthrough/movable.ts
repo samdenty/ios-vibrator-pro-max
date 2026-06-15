@@ -2,8 +2,8 @@ import { debugMode } from ".";
 import { registerStyleUpdater } from "../../utils";
 import { shouldVibrate } from "../../vibration";
 import { clickableTriggers } from "./clickable";
-import { isInputRangeElement } from "./inputable";
 import { clonePointerEvent } from "./forward-events";
+import { isInputRangeElement } from "./inputable";
 
 export function isNativeMovableElement(element: HTMLElement) {
 	const tagName = element.tagName.toLowerCase();
@@ -74,11 +74,7 @@ export function handleMovable(element: HTMLElement) {
 	};
 
 	const onTouchEnd = () => {
-		console.log("onTouchEnd");
-
 		if (!touchMove && touchStart) {
-			console.log("trigger synthetic click on ", trigger.label);
-
 			trigger.simulateClick(
 				clonePointerEvent("click", {
 					altKey: touchStart.altKey,

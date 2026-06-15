@@ -1,10 +1,10 @@
 import { asyncWait, blockingWait, polyfillKind } from "../../utils";
 import { getVibration, hiddenTrigger } from "../../vibration";
 import {
+	MAX_NO_VIBRATION_WAIT,
 	avgLatency,
 	backgroundPopup,
 	fetchLatest,
-	MAX_NO_VIBRATION_WAIT,
 	noVibrationCount,
 	openBackgroundPopup,
 	popupConnected,

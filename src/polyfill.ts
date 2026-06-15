@@ -1,14 +1,14 @@
 // Sorry Tim Cook, PWAs deserve some love too...
 
 import {
+	authorizeVibrations,
 	handleAddElement,
 	handleRemoveElement,
-	triggersRoot,
-	authorizeVibrations,
 	setBackgroundVibration,
+	triggersRoot,
 } from "./methods";
 import { asyncWait, polyfillKind, throttle } from "./utils";
-import { rootTrigger, setVibration, ignoredElements } from "./vibration";
+import { ignoredElements, rootTrigger, setVibration } from "./vibration";
 
 function polyfill(rawPatterns: Iterable<number> | VibratePattern): boolean {
 	const patterns =

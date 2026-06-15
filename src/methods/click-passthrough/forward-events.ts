@@ -61,7 +61,6 @@ export function forwardEvents(element: HTMLElement) {
 
 	const onPointerEvent = (event: PointerEvent) => {
 		pointerTarget ??= getTarget(event.clientX, event.clientY);
-		console.log("onPointerEvent", event.type, pointerTarget);
 
 		const forwardedEvent = clonePointerEvent(event.type, event);
 		pointerTarget.dispatchEvent(forwardedEvent);
@@ -73,7 +72,6 @@ export function forwardEvents(element: HTMLElement) {
 
 	const onMouseEvent = (event: MouseEvent) => {
 		mouseTarget ??= pointerTarget ?? getTarget(event.clientX, event.clientY);
-		console.log("onMouseEvent", event.type, mouseTarget);
 
 		const forwardedEvent = clonePointerEvent(event.type, event);
 		mouseTarget.dispatchEvent(forwardedEvent);
@@ -90,8 +88,6 @@ export function forwardEvents(element: HTMLElement) {
 				event.targetTouches[0]?.clientX,
 				event.targetTouches[0]?.clientY,
 			);
-
-		console.log("onTouchEvent", event.type, touchTarget);
 
 		const forwardedEvent = new TouchEvent(event.type, {
 			bubbles: true,
