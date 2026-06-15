@@ -1,7 +1,7 @@
 "use client";
 
-import "ios-vibrator-pro-max/src";
-import { enableDebugMode } from "ios-vibrator-pro-max/src";
+// import "ios-vibrator-pro-max/src";
+// import { enableDebugMode } from "ios-vibrator-pro-max/src";
 import { CodeBlock } from "@/components/code-block";
 import { ElasticSlider } from "@/components/elastic-slider";
 import IOSSlider from "@/components/ios-slider";
@@ -17,7 +17,7 @@ import { TimePicker } from "@/components/time-picker";
 import { useState } from "react";
 import { useSound } from "use-sound";
 
-enableDebugMode();
+// enableDebugMode();
 
 const BADGES = [
 	{
