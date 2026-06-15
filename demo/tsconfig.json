@@ -21,7 +21,8 @@
 		],
 		"paths": {
 			"@/*": ["./src/*"]
-		}
+		},
+		"noEmit": false
 	},
 	"include": [
 		"next-env.d.ts",

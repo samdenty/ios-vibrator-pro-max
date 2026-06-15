@@ -1,7 +1,6 @@
 "use client";
 
 import "ios-vibrator-pro-max/src";
-import { enableDebugMode } from "ios-vibrator-pro-max/src";
 import { CodeBlock } from "@/components/code-block";
 import { ElasticSlider } from "@/components/elastic-slider";
 import IOSSlider from "@/components/ios-slider";
@@ -14,10 +13,11 @@ import {
 	SlideToUnlockTrack,
 } from "@/components/slide-to-unlock";
 import { TimePicker } from "@/components/time-picker";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { enableDebugMode } from "ios-vibrator-pro-max/src";
 import { useState } from "react";
 import { useSound } from "use-sound";
-
-// enableDebugMode();
 
 const BADGES = [
 	{
@@ -42,7 +42,7 @@ const USAGE_CODE = `import "ios-vibrator-pro-max";
 
 <div
   className="touch-none"
-  onTouchMove={() => {
+  onPointerMove={() => {
     navigator.vibrate(50);
   }}
 />
@@ -57,6 +57,7 @@ const USAGE_CODE = `import "ios-vibrator-pro-max";
 
 export default function Home() {
 	const [value, setValue] = useState(0.5);
+	const [debug, setDebug] = useState(false);
 	const [play] = useSound("/unlock.mp3", { volume: 0.5 });
 
 	return (
@@ -80,13 +81,13 @@ export default function Home() {
 					</h1>
 
 					<p className="mt-6 max-w-2xl text-balance text-lg text-white/60">
-						iOS Safari implementation of{" "}
+						iOS/macOS Safari implementation of{" "}
 						<code className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-base text-amber-200">
 							navigator.vibrate
 						</code>{" "}
 						— Works inside{" "}
 						<code className="font-mono text-white/80">onClick</code>,{" "}
-						<code className="font-mono text-white/80">onTouchMove</code> and{" "}
+						<code className="font-mono text-white/80">onPointerMove</code> and{" "}
 						<code className="font-mono text-white/80">onInput</code>.
 					</p>
 
@@ -112,11 +113,29 @@ export default function Home() {
 						<div className="mb-10 text-center">
 							<h2 className="text-3xl font-bold tracking-tight">Playground</h2>
 							<p className="mx-auto mt-3 max-w-md text-balance text-white/50">
-								On an iPhone you&apos;ll feel haptic feedback as you slide.
+								On an iPhone/MacBook, in Safari you&apos;ll feel haptic feedback
+								as you slide these elements.
+								<div className="mt-2 text-white/20">
+									(if you don't feel anything, drag slower)
+								</div>
 							</p>
 						</div>
 
 						<div className="flex flex-col items-center rounded-3xl border border-white/10 bg-white/2 px-4 py-2 backdrop-blur">
+							<FieldGroup className="mt-2 ml-auto w-35">
+								<Field orientation="horizontal">
+									<Checkbox
+										id="debug-mode"
+										checked={debug}
+										onCheckedChange={(checked) => {
+											setDebug(checked);
+											enableDebugMode(checked);
+										}}
+									/>
+									<FieldLabel htmlFor="debug-mode">Show the magic!</FieldLabel>
+								</Field>
+							</FieldGroup>
+
 							<IOSSlider />
 							<ElasticSlider
 								label="Haptic slider"

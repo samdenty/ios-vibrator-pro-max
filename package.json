@@ -1,7 +1,7 @@
 {
 	"name": "ios-vibrator-pro-max",
-	"version": "3.0.1",
-	"description": "Bringing the vibrate API for the first time to the web on iOS 18 Safari",
+	"version": "3.0.2",
+	"description": "Bringing the vibrate API for the first time to the web on iOS/macOS Safari",
 	"homepage": "https://vibrator.dev/",
 	"type": "module",
 	"files": ["dist"],
@@ -20,7 +20,7 @@
 	"scripts": {
 		"dev": "cd demo && pnpm dev",
 		"lint": "biome check",
-		"lint:fix": "pnpm lint --write",
+		"lint:fix": "biome check --write",
 		"build": "rm -rf dist; tsc -b",
 		"prepublishOnly": "pnpm build"
 	},

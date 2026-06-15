@@ -4,19 +4,37 @@
 [![Total npm downloads](https://www.shieldcn.dev/npm/dw/ios-vibrator-pro-max.svg?variant=secondary&size=sm)](https://www.npmjs.com/package/ios-vibrator-pro-max)
 [![@samdenty on X](https://www.shieldcn.dev/x/follow/samdenty.svg?variant=branded&size=sm)](https://x.com/samdenty)
 
-iOS Safari implementation of `navigator.vibrate` — works inside `onClick`, `onTouchMove` and `onInput`.
+iOS/macOS Safari implementation of `navigator.vibrate` — works inside `onClick`, `onPointerMove` and `onInput`.
 
-```ts
+```tsx
 import "ios-vibrator-pro-max";
 
-navigator.vibrate(1000);
+<button
+  onClick={() => {
+    navigator.vibrate(200);
+  }}
+/>
+
+<div
+  className="touch-none"
+  onPointerMove={() => {
+    navigator.vibrate(50);
+  }}
+/>
+
+<input
+  type="range"
+  onInput={() => {
+    navigator.vibrate(50);
+  }}
+/>
 ```
 
 ## How it works
 
 This polyfill works by layering hidden input switches ontop of interactive elements in your application. When you call `navigator.vibrate` we have three methods of triggering a vibration:
 
-1. **`ontouchmove`** - We overlay a switch ontop of the draggable area and rapidly flip the position, so the browser thinks your finger is toggling the switch causing vibration.
+1. **`onpointermove`** - We overlay a switch ontop of the draggable area and rapidly flip the position, so the browser thinks your finger is toggling the switch causing vibration.
 2. **`onclick`** - We wrap the entire DOM inside a label element and detect what element you click on. We then simulate clicks on the elements you were clicking on, and if your handler didn't cause a vibration we call `event.preventDefault()` on the wrapped DOM label to block the vibration.
 3. **Outside `onclick`** - We capture previous click interactions that are performed on any element, we then call `label.click()` repeatedly inside a `setTimeout` in that events handlers closure.
 

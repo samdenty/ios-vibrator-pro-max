@@ -9,9 +9,9 @@ import {
 } from "./methods";
 import {
 	asyncWait,
+	markStylesheetsDirty,
 	polyfillKind,
 	throttle,
-	markStylesheetsDirty,
 } from "./utils";
 import { ignoredElements, rootTrigger, setVibration } from "./vibration";
 

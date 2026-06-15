@@ -43,6 +43,7 @@ export const CLICKABLE_ROLES = new Set([
 	"input",
 	"textarea",
 	"select",
+	"checkbox",
 	"label",
 	"slider",
 	"range",
@@ -127,17 +128,18 @@ export function handleClickable(element: HTMLElement, force = false) {
 
 	let stopPointerEvents = false;
 
-	function onTouchStart(event: TouchEvent) {
+	function onPointerDown(event: PointerEvent) {
 		if (isInputRange && event.target === trigger.input) {
 			return;
 		}
 
-		const { clientX, clientY } = event.touches[0];
-
 		stopPointerEvents = true;
 		updateStyles();
 
-		const touchedElement = document.elementFromPoint(clientX, clientY);
+		const touchedElement = document.elementFromPoint(
+			event.clientX,
+			event.clientY,
+		);
 
 		if (touchedElement === element) {
 			stopPointerEvents = false;
@@ -145,7 +147,7 @@ export function handleClickable(element: HTMLElement, force = false) {
 		}
 	}
 
-	function onTouchEnd() {
+	function onPointerUp() {
 		stopPointerEvents = false;
 		updateStyles();
 	}
@@ -222,15 +224,15 @@ export function handleClickable(element: HTMLElement, force = false) {
 	clickableTriggers.set(element, trigger);
 	triggersRoot.appendChild(trigger.label);
 
-	trigger.label.addEventListener("touchstart", onTouchStart, true);
-	trigger.label.addEventListener("touchend", onTouchEnd, true);
+	trigger.label.addEventListener("pointerdown", onPointerDown, true);
+	trigger.label.addEventListener("pointerup", onPointerUp, true);
 	trigger.label.addEventListener("click", onClick, true);
 
 	return () => {
 		disposeStyles();
 
-		trigger.label.removeEventListener("touchstart", onTouchStart);
-		trigger.label.removeEventListener("touchend", onTouchEnd);
+		trigger.label.removeEventListener("pointerdown", onPointerDown);
+		trigger.label.removeEventListener("pointerup", onPointerUp);
 		trigger.label.removeEventListener("click", onClick);
 
 		clickableTriggers.delete(element);

@@ -32,14 +32,10 @@ function handleInputRange(inputRange: HTMLInputElement) {
 	let lastInputValue = inputRange.value;
 	let preventChange = false;
 
-	const updateValue = (event: TouchEvent | MouseEvent) => {
-		const isClickEvent = !("touches" in event);
-
-		const clientX = isClickEvent ? event.clientX : event.touches[0].clientX;
-
+	const updateValue = (event: PointerEvent | MouseEvent) => {
 		const { width, x } = inputRange.getBoundingClientRect();
 
-		const percentage = (clientX - x) / width;
+		const percentage = (event.clientX - x) / width;
 
 		const min = Number.parseFloat(inputRange.min) || 0;
 		const max = Number.parseFloat(inputRange.max) || 100;
@@ -50,12 +46,12 @@ function handleInputRange(inputRange: HTMLInputElement) {
 
 		inputRange.value = `${inputRange.step === "any" ? newValue : Math.round(newValue / step) * step}`;
 
-		if (lastValue !== inputRange.value && isClickEvent) {
+		if (lastValue !== inputRange.value && event.type === "click") {
 			lastInputValue = inputRange.value;
 			lastValue = inputRange.value;
 
 			inputRange.dispatchEvent(new Event("change"));
-		} else if (lastInputValue !== inputRange.value && !isClickEvent) {
+		} else if (lastInputValue !== inputRange.value && event.type !== "click") {
 			lastInputValue = inputRange.value;
 			inputRange.dispatchEvent(new Event("input"));
 		}
@@ -94,7 +90,7 @@ function handleInputRange(inputRange: HTMLInputElement) {
 		});
 	};
 
-	const onTouchStart = (event: TouchEvent) => {
+	const onPointerDown = (event: PointerEvent) => {
 		preventChange = false;
 
 		if (event.target === trigger.label) {
@@ -104,14 +100,14 @@ function handleInputRange(inputRange: HTMLInputElement) {
 		updateValue(event);
 	};
 
-	const onTouchEnd = (event: TouchEvent) => {
+	const onPointerUp = (event: PointerEvent) => {
 		if (event.target === trigger.label) {
 			preventChange = true;
 			return resetValueOnTouch();
 		}
 	};
 
-	const onTouchMove = (event: TouchEvent) => {
+	const onPointerMove = (event: PointerEvent) => {
 		if (event.target === trigger.label) {
 			return resetValueOnTouch();
 		}
@@ -154,9 +150,9 @@ function handleInputRange(inputRange: HTMLInputElement) {
 	const disposeClick = trigger.onSimulateClick(onClick);
 	inputRange.addEventListener("change", onChange, true);
 
-	trigger.label.addEventListener("touchstart", onTouchStart, true);
-	trigger.label.addEventListener("touchmove", onTouchMove, true);
-	trigger.label.addEventListener("touchend", onTouchEnd, true);
+	trigger.label.addEventListener("pointerdown", onPointerDown, true);
+	trigger.label.addEventListener("pointermove", onPointerMove, true);
+	trigger.label.addEventListener("pointerup", onPointerUp, true);
 
 	return () => {
 		disposeStyles();
@@ -164,9 +160,9 @@ function handleInputRange(inputRange: HTMLInputElement) {
 
 		inputRange.removeEventListener("change", onChange);
 
-		trigger.label.removeEventListener("touchstart", onTouchStart);
-		trigger.label.removeEventListener("touchmove", onTouchMove);
-		trigger.label.removeEventListener("touchend", onTouchEnd);
+		trigger.label.removeEventListener("pointerdown", onPointerDown);
+		trigger.label.removeEventListener("pointermove", onPointerMove);
+		trigger.label.removeEventListener("pointerup", onPointerUp);
 	};
 }
 

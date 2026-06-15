@@ -1,8 +1,8 @@
 import { debugMode } from ".";
 import {
-	registerStyleUpdater,
-	isMovableTouchAction,
 	getTouchActionCandidates,
+	isMovableTouchAction,
+	registerStyleUpdater,
 } from "../../utils";
 import { shouldVibrate } from "../../vibration";
 import { clickableTriggers } from "./clickable";
@@ -42,8 +42,8 @@ export function handleMovable(element: HTMLElement) {
 		return;
 	}
 
-	let touchStart: TouchEvent | null = null;
-	let touchMove = false;
+	let pointerDown: PointerEvent | null = null;
+	let pointerMove = false;
 
 	let startX = 0;
 	let startY = 0;
@@ -53,53 +53,51 @@ export function handleMovable(element: HTMLElement) {
 
 	let flippedDirection = false;
 
-	function onTouchStart(event: TouchEvent) {
-		const { clientX, clientY } = event.touches[0];
+	function onPointerDown(event: PointerEvent) {
 		const box = element.getBoundingClientRect();
 
-		startX = clientX - box.x;
-		startY = clientY - box.y;
+		startX = event.clientX - box.x;
+		startY = event.clientY - box.y;
 
 		x = startX;
 		y = startY;
 
-		touchMove = false;
-		touchStart = event;
+		pointerMove = false;
+		pointerDown = event;
 
 		updateClipStyles();
 		updateInputStyles();
 	}
 
-	const onTouchMove = (event: TouchEvent) => {
-		const { clientX, clientY } = event.touches[0];
+	const onPointerMove = (event: PointerEvent) => {
 		const box = element.getBoundingClientRect();
 
-		x = clientX - box.x;
-		y = clientY - box.y;
+		x = event.clientX - box.x;
+		y = event.clientY - box.y;
 
-		touchMove = true;
+		pointerMove = true;
 		flippedDirection = !flippedDirection;
 
 		updateClipStyles();
 	};
 
-	const onTouchEnd = () => {
-		if (!touchMove && touchStart) {
+	const onPointerUp = () => {
+		if (!pointerMove && pointerDown) {
 			trigger.simulateClick(
 				clonePointerEvent("click", {
-					altKey: touchStart.altKey,
-					cancelable: touchStart.cancelable,
-					ctrlKey: touchStart.ctrlKey,
-					metaKey: touchStart.metaKey,
-					shiftKey: touchStart.shiftKey,
-					view: touchStart.view,
-					detail: touchStart.detail,
-					which: touchStart.which,
-					composed: touchStart.composed,
-					clientX: touchStart.touches[0].clientX,
-					clientY: touchStart.touches[0].clientY,
-					screenX: touchStart.touches[0].screenX,
-					screenY: touchStart.touches[0].screenY,
+					altKey: pointerDown.altKey,
+					cancelable: pointerDown.cancelable,
+					ctrlKey: pointerDown.ctrlKey,
+					metaKey: pointerDown.metaKey,
+					shiftKey: pointerDown.shiftKey,
+					view: pointerDown.view,
+					detail: pointerDown.detail,
+					which: pointerDown.which,
+					composed: pointerDown.composed,
+					clientX: pointerDown.clientX,
+					clientY: pointerDown.clientY,
+					screenX: pointerDown.screenX,
+					screenY: pointerDown.screenY,
 				}),
 			);
 
@@ -113,8 +111,8 @@ export function handleMovable(element: HTMLElement) {
 		}
 
 		trigger.input.checked = false;
-		touchMove = false;
-		touchStart = null;
+		pointerMove = false;
+		pointerDown = null;
 
 		updateClipStyles();
 		updateInputStyles();
@@ -126,10 +124,6 @@ export function handleMovable(element: HTMLElement) {
 			updateInputStyles();
 		});
 	};
-
-	trigger.input.addEventListener("touchstart", onTouchStart, true);
-	trigger.input.addEventListener("touchmove", onTouchMove, true);
-	trigger.input.addEventListener("touchend", onTouchEnd, true);
 
 	const [updateInputStyles, disposeInputStyles] = registerStyleUpdater(
 		trigger.input,
@@ -152,7 +146,7 @@ export function handleMovable(element: HTMLElement) {
 		() => {
 			const opacity = debugMode ? 0.4 : 0;
 
-			if (!touchMove || !touchStart) {
+			if (!pointerMove || !pointerDown) {
 				const computedStyle = getComputedStyle(element);
 				if (isInputRange) {
 					return [
@@ -208,6 +202,10 @@ export function handleMovable(element: HTMLElement) {
 	element.setPointerCapture = () => {};
 	element.releasePointerCapture = () => {};
 
+	trigger.input.addEventListener("pointerdown", onPointerDown, true);
+	trigger.input.addEventListener("pointermove", onPointerMove, true);
+	trigger.input.addEventListener("pointerup", onPointerUp, true);
+
 	return () => {
 		disposeClipStyles();
 		disposeInputStyles();
@@ -215,9 +213,9 @@ export function handleMovable(element: HTMLElement) {
 		element.setPointerCapture = setPointerCapture;
 		element.releasePointerCapture = releasePointerCapture;
 
-		trigger.input.removeEventListener("touchstart", onTouchStart);
-		trigger.input.removeEventListener("touchmove", onTouchMove);
-		trigger.input.removeEventListener("touchend", onTouchEnd);
+		trigger.input.removeEventListener("pointerdown", onPointerDown);
+		trigger.input.removeEventListener("pointermove", onPointerMove);
+		trigger.input.removeEventListener("pointerup", onPointerUp);
 	};
 }
 
