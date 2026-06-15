@@ -7,7 +7,12 @@ import {
 	setBackgroundVibration,
 	triggersRoot,
 } from "./methods";
-import { asyncWait, polyfillKind, throttle } from "./utils";
+import {
+	asyncWait,
+	polyfillKind,
+	throttle,
+	markStylesheetsDirty,
+} from "./utils";
 import { ignoredElements, rootTrigger, setVibration } from "./vibration";
 
 function polyfill(rawPatterns: Iterable<number> | VibratePattern): boolean {
@@ -95,8 +100,6 @@ async function initPolyfill() {
 		style.textContent = `
       label[for="ios-vibrator-pro-max"] {
         ${styles}
-        position: fixed !important;
-        inset: 0 !important;
         -webkit-tap-highlight-color: transparent !important;
       }
 
@@ -105,7 +108,6 @@ async function initPolyfill() {
       }
 
       html > body {
-        all: unset !important;
         display: contents !important;
       }
 
@@ -131,7 +133,7 @@ async function initPolyfill() {
 		rootTrigger.label.appendChild(child);
 
 		if (child.nodeType === Node.ELEMENT_NODE) {
-			handleAddElement(child as HTMLElement, []);
+			handleAddElement(child as HTMLElement);
 		}
 	}
 
@@ -154,7 +156,22 @@ async function initPolyfill() {
 
 		raf ??= requestAnimationFrame(updateBodyStyles);
 
+		ignoreMutation = true;
 		for (const mutation of mutations) {
+			if (mutation.type === "characterData") {
+				// Text content of a <style> element changed.
+				markStylesheetsDirty();
+			}
+
+			if (mutation.type === "childList") {
+				for (const node of [...mutation.addedNodes, ...mutation.removedNodes]) {
+					const name = node.nodeName;
+					if (name === "STYLE" || name === "LINK") {
+						markStylesheetsDirty();
+					}
+				}
+			}
+
 			for (const node of mutation.addedNodes) {
 				if (node.nodeType === Node.ELEMENT_NODE) {
 					handleAddElement(node as HTMLElement);
@@ -167,12 +184,18 @@ async function initPolyfill() {
 				}
 			}
 		}
+
+		ignoreMutation = false;
 	});
 
 	observer.observe(rootTrigger.label, {
 		childList: true,
 		subtree: true,
+		characterData: true,
 		attributes: true,
+
+		// Selectors targeting `touch-action` overwhelmingly key off these.
+		attributeFilter: ["style", "class", "id"],
 	});
 
 	Object.defineProperty(document, "body", {

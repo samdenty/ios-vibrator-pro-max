@@ -1,30 +1,37 @@
 import { debugMode } from ".";
-import { registerStyleUpdater } from "../../utils";
+import {
+	registerStyleUpdater,
+	isMovableTouchAction,
+	getTouchActionCandidates,
+} from "../../utils";
 import { shouldVibrate } from "../../vibration";
 import { clickableTriggers } from "./clickable";
 import { clonePointerEvent } from "./forward-events";
 import { isInputRangeElement } from "./inputable";
 
-export function isNativeMovableElement(element: HTMLElement) {
-	const tagName = element.tagName.toLowerCase();
-	const switchAttribute = element.getAttribute("switch");
-
-	return (
-		tagName === "input" &&
-		(element as HTMLInputElement).type === "checkbox" &&
-		switchAttribute !== null &&
-		switchAttribute !== "false"
-	);
-}
-
-export const MOVABLE_ROLES = new Set(["slider", "range"]);
+const cachedIsMovable = new WeakMap<HTMLElement, boolean>();
 
 export function isMovableElement(element: HTMLElement) {
-	if (MOVABLE_ROLES.has(element.role ?? "")) {
+	if (isInputRangeElement(element)) {
 		return true;
 	}
 
-	return isInputRangeElement(element);
+	if (!cachedIsMovable.has(element)) {
+		if (!getTouchActionCandidates().has(element)) {
+			return false;
+		}
+
+		const touchAction = getComputedStyle(element).touchAction;
+		const isMovable = isMovableTouchAction(touchAction);
+
+		cachedIsMovable.set(element, isMovable);
+
+		requestAnimationFrame(() => {
+			cachedIsMovable.delete(element);
+		});
+	}
+
+	return cachedIsMovable.get(element)!;
 }
 
 export function handleMovable(element: HTMLElement) {
@@ -131,7 +138,8 @@ export function handleMovable(element: HTMLElement) {
 				"position: absolute",
 				"top: 50%",
 				"left: 50%",
-				`transform: translate(-50%, -50%) ${touchStart ? "" : "scale(200%)"}`,
+				"touch-action: none",
+				"transform: translate(-50%, -50%)",
 			];
 		},
 	);
@@ -208,4 +216,20 @@ export function handleMovable(element: HTMLElement) {
 		trigger.input.removeEventListener("touchmove", onTouchMove);
 		trigger.input.removeEventListener("touchend", onTouchEnd);
 	};
+}
+
+export function isNativeMovableElement(element: HTMLElement) {
+	if (element.draggable) {
+		return true;
+	}
+
+	const tagName = element.tagName.toLowerCase();
+	const switchAttribute = element.getAttribute("switch");
+
+	return (
+		tagName === "input" &&
+		(element as HTMLInputElement).type === "checkbox" &&
+		switchAttribute !== null &&
+		switchAttribute !== "false"
+	);
 }

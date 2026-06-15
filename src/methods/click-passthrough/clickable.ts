@@ -7,7 +7,7 @@ import {
 	shouldVibrate,
 } from "../../vibration";
 import { clonePointerEvent } from "./forward-events";
-import { isNativeMovableElement } from "./movable";
+import { isMovableElement, isNativeMovableElement } from "./movable";
 
 export const triggersRoot =
 	typeof document !== "undefined" ? document.createElement("div") : null!;
@@ -54,19 +54,16 @@ export const CLICKABLE_ROLES = new Set([
 
 function isClickableElement(element: HTMLElement) {
 	const tagName = element.tagName.toLowerCase();
-	if (element.draggable) {
-		return;
-	}
-
-	if (!CLICKABLE_ROLES.has(element.role ?? "") && !CLICKABLE.has(tagName)) {
-		return false;
-	}
 
 	if (isNativeMovableElement(element)) {
 		return false;
 	}
 
-	return true;
+	if (isMovableElement(element)) {
+		return true;
+	}
+
+	return CLICKABLE_ROLES.has(element.role ?? "") || CLICKABLE.has(tagName);
 }
 
 let anchorId = 1;
@@ -101,8 +98,12 @@ rootTrigger?.label.addEventListener("click", (event) => {
 	event.preventDefault();
 });
 
-export function handleClickable(element: HTMLElement) {
-	if (!isClickableElement(element)) {
+export function handleClickable(element: HTMLElement, force = false) {
+	if (!force && !isClickableElement(element)) {
+		return;
+	}
+
+	if (clickableTriggers.has(element)) {
 		return;
 	}
 

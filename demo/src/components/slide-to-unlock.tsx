@@ -12,6 +12,7 @@ import {
 	createContext,
 	useCallback,
 	useContext,
+	useEffect,
 	useRef,
 	useState,
 } from "react";
@@ -66,7 +67,38 @@ export function SlideToUnlock({
 	const fadeDistance = handleWidth;
 	const textOpacity = useTransform(x, [0, fadeDistance], [1, 0]);
 
+	const lastVibrateProgress = useRef(0);
+
+	useEffect(() => {
+		const unsubscribe = x.on("change", (value) => {
+			const trackWidth = trackRef.current?.offsetWidth || 0;
+			const maxX = trackWidth - handleWidth;
+			if (maxX <= 0) return;
+
+			const progress = Math.min(Math.max(value / maxX, 0), 1);
+
+			// Reset the vibration tracker once the handle returns to the start.
+			if (progress <= 0) {
+				lastVibrateProgress.current = 0;
+				return;
+			}
+
+			// Spacing between vibrations shrinks exponentially as the handle
+			// nears the end: ~5% at the start down to ~1% near unlock.
+			const step = 0.05 * (0.01 / 0.05) ** progress;
+
+			if (progress - lastVibrateProgress.current >= step) {
+				lastVibrateProgress.current = progress;
+				// Pulses get a touch stronger the closer you are to unlocking.
+				navigator.vibrate?.(Math.round(2 + progress * 8));
+			}
+		});
+
+		return unsubscribe;
+	}, [x, handleWidth]);
+
 	const handleDragStart = useCallback(() => {
+		lastVibrateProgress.current = 0;
 		setIsDragging(true);
 	}, []);
 

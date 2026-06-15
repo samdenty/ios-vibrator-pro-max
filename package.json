@@ -22,8 +22,7 @@
 	"author": "Sam Denty <samddenty@gmail.com> (http://samdenty.com/)",
 	"license": "ISC",
 	"devDependencies": {
-		"typescript": "^5.7.3",
-		"vite": "^6.1.1",
+		"typescript": "^6.0.3",
 		"@biomejs/biome": "^1.9.4"
 	},
 	"dependencies": {}

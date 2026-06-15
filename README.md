@@ -1,11 +1,10 @@
 # `ios-vibrator-pro-max`
 
-[![npm version](https://img.shields.io/npm/v/ios-vibrator-pro-max.svg?style=flat-square)](https://www.npmjs.com/package/ios-vibrator-pro-max)
-[![npm downloads](https://img.shields.io/npm/dm/ios-vibrator-pro-max.svg?style=flat-square)](https://www.npmjs.com/package/ios-vibrator-pro-max)
-[![Demo](https://img.shields.io/badge/Demo-blue.svg?style=flat-square)](https://ios-vibrate-api-demo.vercel.app/)
+[![npm downloads](https://www.shieldcn.dev/npm/dm/ios-vibrator-pro-max.svg?variant=branded&size=sm)](https://www.npmjs.com/package/ios-vibrator-pro-max)
+[![Total npm downloads](https://www.shieldcn.dev/npm/dw/ios-vibrator-pro-max.svg?variant=secondary&size=sm)](https://www.npmjs.com/package/ios-vibrator-pro-max)
+[![@samdenty on X](https://www.shieldcn.dev/x/follow/samdenty.svg?variant=branded&size=sm)](https://x.com/samdenty)
 
-
-Finally Safari added an unofficial™️ vibration API. I'm sorry to whoever who let this amazing feature/bug accidentally ship it's way into iOS 18. Tim cook please don't remove it, the web & PWAs need love too.
+iOS Safari implementation of `navigator.vibrate` — works inside `onTouchMove`, `onClick` and `onTouchStart`.
 
 ```ts
 import "ios-vibrator-pro-max";

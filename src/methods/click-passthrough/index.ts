@@ -1,5 +1,4 @@
 import { updateStyles } from "../../utils";
-import { ignoredElements, rootTrigger } from "../../vibration";
 import { handleClickable } from "./clickable";
 import { forwardEvents } from "./forward-events";
 import { handleInputable } from "./inputable";
@@ -14,27 +13,14 @@ export function enableDebugMode(enabled = true) {
 	updateStyles();
 }
 
-export function handleAddElement(
-	element: HTMLElement,
-	parents?: HTMLElement[],
-) {
-	if (ignoredElements.has(element)) {
-		return;
-	}
-
-	if (!parents) {
-		parents = [];
-
-		let parent = element.parentElement;
-		while (parent && parent !== rootTrigger?.label) {
-			parents.push(parent);
-			parent = parent.parentElement;
-		}
+export function handleAddElement(element: HTMLElement) {
+	if (elementDisposers.has(element)) {
+		return () => {};
 	}
 
 	for (const child of element.childNodes) {
 		if (child.nodeType === Node.ELEMENT_NODE) {
-			handleAddElement(child as HTMLElement, [...parents, element]);
+			handleAddElement(child as HTMLElement);
 		}
 	}
 
@@ -52,12 +38,22 @@ export function handleAddElement(
 			dispose?.();
 		}
 	});
+
+	return () => {
+		handleRemoveElement(element);
+	};
 }
 
 export function handleRemoveElement(element: HTMLElement) {
 	const dispose = elementDisposers.get(element);
 	dispose?.();
 	elementDisposers.delete(element);
+
+	for (const child of element.childNodes) {
+		if (child.nodeType === Node.ELEMENT_NODE) {
+			handleRemoveElement(child as HTMLElement);
+		}
+	}
 }
 
 export { triggersRoot } from "./clickable";

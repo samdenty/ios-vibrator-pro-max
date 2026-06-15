@@ -99,6 +99,41 @@ body {
 	min-height: 100vh;
 }
 
+/* iOS-style range input used in the usage examples */
+.ios-range {
+	-webkit-appearance: none;
+	appearance: none;
+	height: 8px;
+	border-radius: 9999px;
+	background: rgba(255, 255, 255, 0.12);
+	outline: none;
+	cursor: pointer;
+}
+
+.ios-range::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 24px;
+	height: 24px;
+	border-radius: 9999px;
+	background: linear-gradient(to bottom, #fcd34d, #f97316);
+	box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
+	transition: transform 0.1s ease;
+}
+
+.ios-range::-webkit-slider-thumb:active {
+	transform: scale(1.15);
+}
+
+.ios-range::-moz-range-thumb {
+	width: 24px;
+	height: 24px;
+	border: none;
+	border-radius: 9999px;
+	background: linear-gradient(to bottom, #fcd34d, #f97316);
+	box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
+}
+
 .dark {
 	--background: oklch(0.145 0 0);
 	--foreground: oklch(0.985 0 0);
