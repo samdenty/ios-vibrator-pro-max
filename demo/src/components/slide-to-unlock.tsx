@@ -85,12 +85,12 @@ export function SlideToUnlock({
 
 			// Spacing between vibrations shrinks exponentially as the handle
 			// nears the end: ~5% at the start down to ~1% near unlock.
-			const step = 0.05 * (0.01 / 0.05) ** progress;
+			const step = 0.2 * (0.01 / 0.2) ** progress;
 
 			if (progress - lastVibrateProgress.current >= step) {
 				lastVibrateProgress.current = progress;
 				// Pulses get a touch stronger the closer you are to unlocking.
-				navigator.vibrate?.(Math.round(2 + progress * 8));
+				navigator.vibrate?.(Math.round(10 + progress * 10));
 			}
 		});
 
