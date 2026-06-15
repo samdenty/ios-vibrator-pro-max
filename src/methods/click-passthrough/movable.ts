@@ -165,7 +165,7 @@ export function handleMovable(element: HTMLElement) {
 				];
 			}
 
-			const scale = 0.5;
+			const scale = 0.2;
 			const height = 31 * scale;
 			const width = 70 * scale;
 
