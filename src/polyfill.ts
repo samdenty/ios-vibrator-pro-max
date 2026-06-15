@@ -121,7 +121,7 @@ async function initPolyfill() {
 		setTimeout(() => {
 			ignoreMutation = false;
 		});
-	}, 250);
+	}, 500);
 
 	updateBodyStyles();
 

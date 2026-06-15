@@ -54,13 +54,14 @@ export function handleMovable(element: HTMLElement) {
 	let flippedDirection = false;
 
 	function onTouchStart(event: TouchEvent) {
-		const { pageX, pageY } = event.touches[0];
+		const { clientX, clientY } = event.touches[0];
+		const box = element.getBoundingClientRect();
 
-		startX = pageX;
-		startY = pageY;
+		startX = clientX - box.x;
+		startY = clientY - box.y;
 
-		x = pageX;
-		y = pageY;
+		x = startX;
+		y = startY;
 
 		touchMove = false;
 		touchStart = event;
@@ -70,12 +71,14 @@ export function handleMovable(element: HTMLElement) {
 	}
 
 	const onTouchMove = (event: TouchEvent) => {
-		const { pageX, pageY } = event.touches[0];
+		const { clientX, clientY } = event.touches[0];
+		const box = element.getBoundingClientRect();
+
+		x = clientX - box.x;
+		y = clientY - box.y;
 
 		touchMove = true;
 		flippedDirection = !flippedDirection;
-		x = pageX;
-		y = pageY;
 
 		updateClipStyles();
 	};
@@ -133,8 +136,12 @@ export function handleMovable(element: HTMLElement) {
 		() => {
 			return [
 				"all: revert",
+				"position: absolute",
 				"width: 100%",
 				"height: 100%",
+				"top: 50%",
+				"left: 50%",
+				"transform: translate(-50%, -50%)",
 				"touch-action: none",
 			];
 		},
@@ -165,7 +172,7 @@ export function handleMovable(element: HTMLElement) {
 				];
 			}
 
-			const scale = 0.2;
+			const scale = 0.4;
 			const height = 31 * scale;
 			const width = 70 * scale;
 
@@ -182,14 +189,14 @@ export function handleMovable(element: HTMLElement) {
 
 			return [
 				"all: unset",
-				"position: fixed",
+				"position: absolute",
 				"overflow: hidden",
 				`height: ${height}px`,
 				`width: ${width}px`,
 				"top: 0",
 				"left: 0",
 				`direction: ${!vibrate || flippedDirection ? "rtl" : "ltr"}`,
-				`transform: translate(${left - window.scrollX}px, ${top - window.scrollY}px) rotate(${angleDeg360}deg) translateX(${vibrate ? 0 : 50}px)`,
+				`transform: translate(${left}px, ${top}px) rotate(${angleDeg360}deg) translateX(${vibrate ? 0 : 50}px)`,
 				`opacity: ${opacity}`,
 			];
 		},

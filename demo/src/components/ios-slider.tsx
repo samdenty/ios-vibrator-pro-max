@@ -20,7 +20,6 @@ const containerStyle: React.CSSProperties = {
 	alignItems: "center",
 	justifyContent: "center",
 	backdropFilter: "blur(2px)",
-	touchAction: "none",
 };
 
 const trackStyle: React.CSSProperties = {
