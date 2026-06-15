@@ -1,6 +1,6 @@
 {
 	"name": "ios-vibrator-pro-max",
-	"version": "3.0.2",
+	"version": "3.0.3",
 	"description": "Bringing the vibrate API for the first time to the web on iOS/macOS Safari",
 	"homepage": "https://vibrator.dev/",
 	"type": "module",

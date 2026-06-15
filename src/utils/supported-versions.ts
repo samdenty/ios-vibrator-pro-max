@@ -17,6 +17,13 @@ function getSafariVersion() {
 		}
 	}
 
+	if (userAgent.indexOf("iPhone OS")) {
+		const versionRegex = /iPhone OS (\d+(_\d+)?)/;
+		const match = userAgent.match(versionRegex);
+		if (match?.[1]) {
+			return Number.parseFloat(match[1].replace("_", "."));
+		}
+	}
 	return null;
 }
 
