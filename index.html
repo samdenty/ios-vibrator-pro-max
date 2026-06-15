@@ -20,7 +20,7 @@
 <button style="anchor-name: --my-anchor2">Press -> vibration not blocked by onclick</button>
 
 <label style="position-anchor: --my-anchor2; position: fixed; left: anchor(left); top: anchor(top); bottom: anchor(bottom); right: anchor(right);">
-  <input type="checkbox" switch style="display: none">
+  <input type="checkbox" switch>
 </label><br/>
 
 
@@ -30,11 +30,12 @@
 // input.addEventListener('mouseover', (e) => {
 // e.preventDefault();
 // })
-input.addEventListener('touchend', () => {
-  input.disabled = true;
+input.addEventListener('click', () => {
+  label.disabled= true;
+  input.disabled=  true;
 
   // setTimeout(() => {
-  //   input.disabled = false;
+  //   input.setAttribute('type', 'checkbox');
   // });
 });
 

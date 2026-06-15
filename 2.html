@@ -12,10 +12,11 @@
 <textarea onclick="console.warn('clicked textarea');navigator.vibrate(100)">asdfljjkslflkjsf asflkjjklsfa asdlkfjjlkf</textarea>
 <input type="button" value="Press Me">
 
+<br/>
 <input type="checkbox" id="agree" onclick="console.warn('clicked agree');navigator.vibrate(100)">
 <label for="agree">I agree to the terms</label>
 
-<input style="width: 100%" type="range" min="0" max="100" onclick="console.warn('clicked range');" onchange="console.error('onchange')" ontouchstart="console.warn('touched range')">
+<input style="width: 100%" type="range" min="0" max="100" onclick="console.warn('clicked range');" onchange="console.error('onchange')" ontouchstart="console.warn('touched range')" ontouchmove="console.warn('touch move'); navigator.vibrate(100)">
 
 <input type="checkbox" switch>
 
@@ -57,7 +58,7 @@
   </div>
 
 
-
 <script type="module" async>
-  import "./src";
+  import { enableDebugMode } from "./src";
+  enableDebugMode(true);
 </script>

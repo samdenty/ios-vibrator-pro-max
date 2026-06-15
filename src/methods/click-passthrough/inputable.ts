@@ -163,8 +163,8 @@ function handleInputRange(inputRange: HTMLInputElement) {
 		},
 	);
 
+	const disposeClick = trigger.onSimulateClick(onClick);
 	inputRange.addEventListener("change", onChange, true);
-	inputRange.addEventListener("click", onClick, true);
 
 	trigger.label.addEventListener("touchstart", onTouchStart, true);
 	trigger.label.addEventListener("touchmove", onTouchMove, true);
@@ -172,9 +172,9 @@ function handleInputRange(inputRange: HTMLInputElement) {
 
 	return () => {
 		disposeStyles();
+		disposeClick();
 
 		inputRange.removeEventListener("change", onChange);
-		inputRange.removeEventListener("click", onClick);
 
 		trigger.label.removeEventListener("touchstart", onTouchStart);
 		trigger.label.removeEventListener("touchmove", onTouchMove);
@@ -183,10 +183,10 @@ function handleInputRange(inputRange: HTMLInputElement) {
 }
 
 export function handleInputable(element: HTMLElement) {
-	const dispose = handleInputRange(element as HTMLInputElement);
+	const disposeInputRange = handleInputRange(element as HTMLInputElement);
 
-	if (dispose) {
-		return dispose;
+	if (disposeInputRange) {
+		return disposeInputRange;
 	}
 
 	const trigger = clickableTriggers.get(element);
@@ -194,19 +194,15 @@ export function handleInputable(element: HTMLElement) {
 		return;
 	}
 
-	const onClick = (event: MouseEvent) => {
-		if (event.target !== trigger.label) {
-			return;
-		}
-
+	const onClick = () => {
 		console.log("focus inputable", element);
 		element.focus();
 	};
 
-	trigger.label.addEventListener("click", onClick, true);
+	const dispose = trigger.onSimulateClick(onClick);
 
 	return () => {
-		trigger.label.removeEventListener("click", onClick);
+		dispose();
 	};
 }
 

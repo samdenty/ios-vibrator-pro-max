@@ -40,33 +40,46 @@ export function handleMovable(element: HTMLElement) {
 
 	let startX = 0;
 	let startY = 0;
+
+	let x = 0;
+	let y = 0;
+
 	let angleDeg360 = 0;
 
-	let checked = trigger.input.checked;
+	let flipDirection = false;
 
 	function onTouchStart(event: TouchEvent) {
 		const { pageX, pageY } = event.touches[0];
+
 		startX = pageX;
 		startY = pageY;
+
+		x = pageX;
+		y = pageY;
+
 		touchMove = false;
 		touchStart = event;
 
+		updateClipStyles();
 		updateInputStyles();
 	}
 
 	const onTouchMove = (event: TouchEvent) => {
 		const { pageX, pageY } = event.touches[0];
 
-		const deltaX = pageX - startX;
-		const deltaY = pageY - startY;
+		const deltaX = pageX - x;
+		const deltaY = pageY - y;
 
 		const angleDeg = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
 
 		angleDeg360 = ((angleDeg % 360) + 360) % 360;
 		touchMove = true;
-		startX = pageX;
-		startY = pageY;
-		checked = !checked;
+		flipDirection = !flipDirection;
+
+		if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) > 3) {
+			x = pageX;
+			y = pageY;
+		}
 
 		updateClipStyles();
 	};
@@ -77,7 +90,7 @@ export function handleMovable(element: HTMLElement) {
 		if (!touchMove && touchStart) {
 			console.log("trigger synthetic click on ", trigger.label);
 
-			trigger.label.dispatchEvent(
+			trigger.simulateClick(
 				clonePointerEvent("click", {
 					altKey: touchStart.altKey,
 					cancelable: touchStart.cancelable,
@@ -105,18 +118,17 @@ export function handleMovable(element: HTMLElement) {
 		}
 
 		trigger.input.checked = false;
-
-		checked = false;
 		touchMove = false;
 		touchStart = null;
 
 		updateClipStyles();
+		updateInputStyles();
 
 		requestAnimationFrame(() => {
-			checked = false;
 			trigger.input.checked = false;
 
 			updateClipStyles();
+			updateInputStyles();
 		});
 	};
 
@@ -145,8 +157,13 @@ export function handleMovable(element: HTMLElement) {
 			const opacity = debugMode ? 0.4 : 0;
 
 			if (!touchStart) {
+				const computedStyle = getComputedStyle(element);
 				if (isInputRange) {
-					return ["overflow: hidden", `opacity: ${opacity}`];
+					return [
+						"overflow: hidden",
+						`opacity: ${opacity}`,
+						`clip-path: inset(0 round ${computedStyle.borderRadius})`,
+					];
 				}
 
 				return [
@@ -155,17 +172,18 @@ export function handleMovable(element: HTMLElement) {
 					"height: 100%",
 					"overflow: hidden",
 					`opacity: ${opacity}`,
+					`clip-path: inset(0 round ${computedStyle.borderRadius})`,
 				];
 			}
 
-			const scale = 3;
+			const scale = 1;
 			const height = 31 * scale;
 			const width = 70 * scale;
 
-			const top = startY - height / 2;
-			const left = startX - width / 2;
-
 			const vibrate = shouldVibrate();
+
+			const top = (vibrate ? startY : y) - height / 2;
+			const left = (vibrate ? startX : x) - width / 2;
 
 			return [
 				"all: unset",
@@ -173,9 +191,10 @@ export function handleMovable(element: HTMLElement) {
 				"overflow: hidden",
 				`height: ${height}px`,
 				`width: ${width}px`,
-				`top: ${top}px`,
-				`left: ${left}px`,
-				`transform: rotate(${angleDeg360}deg) translateX(${vibrate ? (checked ? width : -width) / 3 : width}px)`,
+				"top: 0",
+				"left: 0",
+				`direction: ${vibrate && flipDirection ? "rtl" : "ltr"}`,
+				`transform: translate(${left}px, ${top}px) rotate(${angleDeg360}deg) ${vibrate ? "" : "translateX(100px)"}`,
 				`opacity: ${opacity}`,
 			];
 		},

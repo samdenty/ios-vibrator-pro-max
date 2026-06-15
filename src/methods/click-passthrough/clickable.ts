@@ -32,6 +32,8 @@ export const clickableTriggers = new Map<
 		label: HTMLLabelElement;
 		input: HTMLInputElement;
 		clip: HTMLDivElement;
+		simulateClick: (event: PointerEvent) => void;
+		onSimulateClick: (callback: (event: PointerEvent) => void) => () => void;
 	}
 >();
 
@@ -68,30 +70,41 @@ function isClickableElement(element: HTMLElement) {
 }
 
 let anchorId = 1;
-let ignoreRootClick = false;
+let ignoreRootClick: boolean | "prevent" = false;
 
 rootTrigger?.label.addEventListener("click", (event) => {
-	if (event.target !== rootTrigger?.label) {
-		return;
-	}
-
-	console.log("clicked on root label", event.target);
-
-	if (ignoreRootClick) {
-		console.log("ignore root click");
-		return;
-	}
-
-	if (shouldVibrate()) {
-		console.log("vibrating");
-		return;
-	}
-
 	if (isNativeMovableElement(event.target as HTMLElement)) {
 		console.log(
 			"not preventing vibration on root trigger because it is a native movable element",
 			event.target,
 		);
+		return;
+	}
+
+	if (ignoreRootClick) {
+		if (ignoreRootClick === "prevent") {
+			console.log("prevent root click");
+			event.preventDefault();
+		} else {
+			console.log("ignore root click");
+		}
+
+		return;
+	}
+
+	console.log("clicked on root label", event.target);
+
+	event.stopPropagation();
+
+	ignoreRootClick = "prevent";
+
+	const clickEvent = clonePointerEvent("click", event);
+	(event.target as HTMLElement).dispatchEvent(clickEvent);
+
+	ignoreRootClick = false;
+
+	if (shouldVibrate()) {
+		console.log("vibrating");
 		return;
 	}
 
@@ -107,6 +120,8 @@ export function handleClickable(element: HTMLElement) {
 	const trigger = {
 		...createVibrationTrigger()!,
 		clip: document.createElement("div"),
+		simulateClick,
+		onSimulateClick,
 	};
 
 	ignoredElements.add(trigger.clip);
@@ -139,33 +154,49 @@ export function handleClickable(element: HTMLElement) {
 		updateStyles();
 	}
 
-	function onClick(event: MouseEvent) {
+	function onClick(event: PointerEvent) {
 		if (event.target !== trigger.label) {
 			return;
 		}
 
 		console.log("trigger synthetic click on ", element);
 
-		click(event);
+		simulateClick(event);
 
 		if (!shouldVibrate()) {
 			event.preventDefault();
 		}
 	}
 
-	function click(event: MouseEvent) {
+	const callbacks = new Set<(event: PointerEvent) => void>();
+
+	function onSimulateClick(callback: (event: PointerEvent) => void) {
+		callbacks.add(callback);
+
+		return () => {
+			callbacks.delete(callback);
+		};
+	}
+
+	function simulateClick(event: PointerEvent) {
+		rootTrigger!.input.disabled = true;
+
 		ignoreRootClick = true;
 		element.dispatchEvent(clonePointerEvent("click", event));
 		ignoreRootClick = false;
+
+		rootTrigger!.input.disabled = false;
+
+		callbacks.forEach((callback) => callback(event));
 	}
 
-	trigger.label.addEventListener("touchstart", onTouchStart, true);
-	trigger.label.addEventListener("touchend", onTouchEnd, true);
-	trigger.label.addEventListener("click", onClick, true);
-
 	const computedStyle = getComputedStyle(element);
+	const existingAnchorName = computedStyle.getPropertyValue("anchor-name");
 
-	element.style.anchorName = `${anchorName}${computedStyle.anchorName !== "none" ? `, ${computedStyle.anchorName}` : ""}`;
+	element.style.setProperty(
+		"anchor-name",
+		`${anchorName}${existingAnchorName !== "none" ? `, ${existingAnchorName}` : ""}`,
+	);
 
 	const [updateStyles, disposeStyles] = registerStyleUpdater(
 		trigger.label,
@@ -178,6 +209,7 @@ export function handleClickable(element: HTMLElement) {
 			return [
 				"all: unset",
 				"position: fixed",
+				"z-index: 2147483647",
 				"top: anchor(top)",
 				"left: anchor(left)",
 				"bottom: anchor(bottom)",
@@ -195,6 +227,10 @@ export function handleClickable(element: HTMLElement) {
 
 	clickableTriggers.set(element, trigger);
 	triggersRoot.appendChild(trigger.label);
+
+	trigger.label.addEventListener("touchstart", onTouchStart, true);
+	trigger.label.addEventListener("touchend", onTouchEnd, true);
+	trigger.label.addEventListener("click", onClick, true);
 
 	return () => {
 		disposeStyles();
@@ -244,7 +280,7 @@ rootTrigger?.label.addEventListener(
 		if (distance && distance <= 15) {
 			console.log("element is nearby so simulating click on ", trigger.label);
 			const clickEvent = clonePointerEvent("click", event);
-			trigger.label.dispatchEvent(clickEvent);
+			trigger.simulateClick(clickEvent);
 		}
 	},
 	true,

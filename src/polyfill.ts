@@ -35,12 +35,6 @@ if (rootTrigger) {
 	// Setup trigger elements
 	rootTrigger.label.htmlFor = "ios-vibrator-pro-max";
 
-	style.textContent = `
-  label[for="ios-vibrator-pro-max"] > * {
-    -webkit-tap-highlight-color: initial !important;
-  }
-`;
-
 	triggersRoot.appendChild(rootTrigger.input);
 
 	rootTrigger.input.id = "ios-vibrator-pro-max";
@@ -80,19 +74,12 @@ async function initPolyfill() {
 			rootTrigger!.label.className = body.className;
 		}
 
-		body.removeAttribute("style");
+		style.remove();
 
 		const bodyStyles = getComputedStyle(body);
 		const rootTriggerStyles = getComputedStyle(rootTrigger!.label);
 
-		rootTrigger!.label.setAttribute(
-			"style",
-			[
-				"position: fixed",
-				"inset: 0",
-				"-webkit-tap-highlight-color: transparent",
-			].join("; "),
-		);
+		let styles = "";
 
 		for (const style of bodyStyles) {
 			if (
@@ -101,21 +88,33 @@ async function initPolyfill() {
 			) {
 				continue;
 			}
-			rootTrigger!.label.style.setProperty(
-				style,
-				bodyStyles.getPropertyValue(style),
-			);
+
+			styles += `${style}: ${bodyStyles.getPropertyValue(style)} !important;\n`;
 		}
 
-		document.documentElement.style.setProperty(
-			"background",
-			bodyStyles.background,
-		);
+		style.textContent = `
+      label[for="ios-vibrator-pro-max"] {
+        ${styles}
+        position: fixed !important;
+        inset: 0 !important;
+        -webkit-tap-highlight-color: transparent !important;
+      }
 
-		body.setAttribute(
-			"style",
-			"all: unset !important; display: contents !important",
-		);
+      label[for="ios-vibrator-pro-max"] > * {
+        -webkit-tap-highlight-color: initial !important;
+      }
+
+      html > body {
+        all: unset !important;
+        display: contents !important;
+      }
+
+      html {
+        background: ${bodyStyles.background} !important;
+      }
+    `;
+
+		document.head.appendChild(style);
 
 		setTimeout(() => {
 			ignoreMutation = false;

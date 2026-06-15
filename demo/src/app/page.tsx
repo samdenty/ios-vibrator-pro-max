@@ -3,12 +3,10 @@
 import { ElasticSlider } from "@/components/elastic-slider";
 import IOSSlider from "@/components/IOSSlider";
 import { useState } from "react";
-import { enableDebugMode } from "ios-vibrator-pro-max/src";
-
-enableDebugMode();
+import { TimerPicker } from "@/components/TimerPicker";
 
 export default function Home() {
-	const [value, setValue] = useState(0.1);
+	const [value, setValue] = useState(0.5);
 
 	return (
 		<main id="sandbox">
@@ -22,6 +20,7 @@ export default function Home() {
 				onValueChange={setValue}
 				className="w-full"
 			/>
+			<TimerPicker />
 		</main>
 	);
 }
