@@ -99,6 +99,90 @@ body {
 	min-height: 100vh;
 }
 
+/* Progressive "frosted" blur behind the sticky nav.
+   Stacked bands with decreasing blur + masks fade the blur out downward. */
+.nav-frost {
+	--nav-blur: 8px;
+	--nav-bg: 1;
+	--nav-fade: 1;
+	--bg-rgb: 7, 8, 7;
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	height: clamp(124px, 17vh, 172px);
+	z-index: 0;
+	pointer-events: none;
+	opacity: var(--nav-fade);
+}
+
+.nav-frost__band {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	height: 100%;
+	pointer-events: none;
+	backdrop-filter: blur(var(--band-blur))
+		saturate(calc(1 + var(--nav-bg) * 0.18));
+	-webkit-backdrop-filter: blur(var(--band-blur))
+		saturate(calc(1 + var(--nav-bg) * 0.18));
+	background: linear-gradient(
+		180deg,
+		rgba(var(--bg-rgb), calc(var(--nav-bg) * var(--band-tint))) 0%,
+		rgba(var(--bg-rgb), 0) 100%
+	);
+	-webkit-mask-image: var(--band-mask);
+	mask-image: var(--band-mask);
+}
+
+.nav-frost__band--1 {
+	--band-blur: calc(var(--nav-blur) * 1.12);
+	--band-tint: 0.62;
+	--band-mask: linear-gradient(
+		180deg,
+		#000 0%,
+		#000 20%,
+		rgba(0, 0, 0, 0.55) 38%,
+		transparent 58%
+	);
+}
+
+.nav-frost__band--2 {
+	--band-blur: calc(var(--nav-blur) * 0.68);
+	--band-tint: 0.42;
+	--band-mask: linear-gradient(
+		180deg,
+		#000 0%,
+		rgba(0, 0, 0, 0.88) 26%,
+		rgba(0, 0, 0, 0.35) 52%,
+		transparent 74%
+	);
+}
+
+.nav-frost__band--3 {
+	--band-blur: calc(var(--nav-blur) * 0.38);
+	--band-tint: 0.24;
+	--band-mask: linear-gradient(
+		180deg,
+		#000 0%,
+		rgba(0, 0, 0, 0.72) 34%,
+		rgba(0, 0, 0, 0.22) 62%,
+		transparent 88%
+	);
+}
+
+.nav-frost__band--4 {
+	--band-blur: calc(var(--nav-blur) * 0.14);
+	--band-tint: 0.1;
+	--band-mask: linear-gradient(
+		180deg,
+		rgba(0, 0, 0, 0.9) 0%,
+		rgba(0, 0, 0, 0.45) 42%,
+		transparent 100%
+	);
+}
+
 /* iOS-style range input used in the usage examples */
 .ios-range {
 	-webkit-appearance: none;

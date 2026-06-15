@@ -2,7 +2,7 @@
 	"name": "ios-vibrator-pro-max",
 	"version": "2.0.2",
 	"description": "Bringing the vibrate API for the first time to the web on iOS 18 Safari",
-	"homepage": "https://vibrator.dev/ios-18",
+	"homepage": "https://vibrator.dev/",
 	"type": "module",
 	"files": ["dist"],
 	"main": "dist/index.js",

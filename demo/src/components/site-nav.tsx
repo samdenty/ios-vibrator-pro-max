@@ -2,8 +2,14 @@
 
 export function SiteNav() {
 	return (
-		<header className="sticky top-0 z-50 border-b border-white/5 bg-black/40 backdrop-blur-xl">
-			<nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5">
+		<header className="sticky top-0 z-50">
+			<div className="nav-frost" aria-hidden="true">
+				<span className="nav-frost__band nav-frost__band--1" />
+				<span className="nav-frost__band nav-frost__band--2" />
+				<span className="nav-frost__band nav-frost__band--3" />
+				<span className="nav-frost__band nav-frost__band--4" />
+			</div>
+			<nav className="relative z-10 mx-auto flex h-14 max-w-5xl items-center justify-between px-5">
 				<a href="/" className="flex items-center gap-2.5 group">
 					<span className="grid size-7 place-items-center rounded-lg bg-linear-to-br from-amber-300 to-orange-500 text-black shadow-lg shadow-orange-500/20 transition-transform group-hover:scale-105">
 						<svg

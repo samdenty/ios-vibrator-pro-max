@@ -1,4 +1,5 @@
 import { clickableTriggers, triggersRoot } from "./clickable";
+import { isInputRangeElement } from "./inputable";
 
 export function clonePointerEvent(
 	type: PointerEvent["type"],
@@ -39,6 +40,7 @@ export function clonePointerEvent(
 
 export function forwardEvents(element: HTMLElement) {
 	const trigger = clickableTriggers.get(element);
+	const isInputRange = isInputRangeElement(element);
 	if (!trigger) {
 		return;
 	}
@@ -48,7 +50,7 @@ export function forwardEvents(element: HTMLElement) {
 	let mouseTarget: HTMLElement | null = null;
 
 	const getTarget = (clientX?: number, clientY?: number) => {
-		if (clientX == null || clientY == null) {
+		if (isInputRange || clientX == null || clientY == null) {
 			return element;
 		}
 

@@ -7,6 +7,7 @@ import {
 	shouldVibrate,
 } from "../../vibration";
 import { clonePointerEvent } from "./forward-events";
+import { isInputRangeElement } from "./inputable";
 import { isMovableElement, isNativeMovableElement } from "./movable";
 
 export const triggersRoot =
@@ -99,6 +100,8 @@ rootTrigger?.label.addEventListener("click", (event) => {
 });
 
 export function handleClickable(element: HTMLElement, force = false) {
+	const isInputRange = isInputRangeElement(element);
+
 	if (!force && !isClickableElement(element)) {
 		return;
 	}
@@ -125,10 +128,13 @@ export function handleClickable(element: HTMLElement, force = false) {
 	let stopPointerEvents = false;
 
 	function onTouchStart(event: TouchEvent) {
+		if (isInputRange && event.target === trigger.input) {
+			return;
+		}
+
 		const { clientX, clientY } = event.touches[0];
 
 		stopPointerEvents = true;
-
 		updateStyles();
 
 		const touchedElement = document.elementFromPoint(clientX, clientY);

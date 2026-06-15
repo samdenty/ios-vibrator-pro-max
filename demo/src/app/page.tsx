@@ -26,11 +26,6 @@ const BADGES = [
 		alt: "npm downloads",
 	},
 	{
-		href: "https://www.npmjs.com/package/ios-vibrator-pro-max",
-		src: "https://www.shieldcn.dev/npm/dw/ios-vibrator-pro-max.svg?variant=secondary&size=sm",
-		alt: "Total npm downloads",
-	},
-	{
 		href: "https://x.com/samdenty",
 		src: "https://www.shieldcn.dev/x/follow/samdenty.svg?variant=branded&size=sm",
 		alt: "@samdenty on X",
@@ -45,9 +40,16 @@ const USAGE_CODE = `import "ios-vibrator-pro-max";
   }}
 />
 
+<div
+  className="touch-none"
+  onTouchMove={() => {
+    navigator.vibrate(50);
+  }}
+/>
+
 <input
   type="range"
-  onTouchMove={() => {
+  onInput={() => {
     navigator.vibrate(50);
   }}
 />
@@ -58,7 +60,7 @@ export default function Home() {
 	const [play] = useSound("/unlock.mp3", { volume: 0.5 });
 
 	return (
-		<div className="relative min-h-screen overflow-x-hidden bg-[#070807] text-white">
+		<div className="relative min-h-screen overflow-x-clip bg-[#070807] text-white">
 			{/* Ambient background glow */}
 			<div className="pointer-events-none absolute inset-0 overflow-hidden">
 				<div className="absolute -top-40 left-1/2 size-160 -translate-x-1/2 rounded-full bg-orange-500/10 blur-[120px]" />
@@ -69,7 +71,7 @@ export default function Home() {
 
 			<main className="relative mx-auto max-w-5xl px-5 pb-32">
 				{/* Hero */}
-				<section className="flex flex-col items-center pt-20 pb-16 text-center sm:pt-28">
+				<section className="flex flex-col items-center pt-20 pb-8 text-center sm:pt-28">
 					<h1 className="bg-linear-to-b from-white to-white/50 bg-clip-text text-5xl font-bold tracking-tight text-transparent sm:text-7xl">
 						ios-vibrator
 						<span className="bg-linear-to-r from-amber-300 to-orange-500 bg-clip-text text-transparent">
@@ -83,9 +85,9 @@ export default function Home() {
 							navigator.vibrate
 						</code>{" "}
 						— Works inside{" "}
-						<code className="font-mono text-white/80">onTouchMove</code>,{" "}
-						<code className="font-mono text-white/80">onClick</code> and{" "}
-						<code className="font-mono text-white/80">onTouchStart</code>.
+						<code className="font-mono text-white/80">onClick</code>,{" "}
+						<code className="font-mono text-white/80">onTouchMove</code> and{" "}
+						<code className="font-mono text-white/80">onInput</code>.
 					</p>
 
 					<div className="mt-8 flex flex-wrap items-center justify-center gap-2">
@@ -104,63 +106,49 @@ export default function Home() {
 					</div>
 				</section>
 
-				{/* Usage */}
-				<section className="py-12 flex flex-col gap-6">
+				<div className="flex flex-col gap-12">
+					{/* Playground */}
+					<section className="py-12">
+						<div className="mb-10 text-center">
+							<h2 className="text-3xl font-bold tracking-tight">Playground</h2>
+							<p className="mx-auto mt-3 max-w-md text-balance text-white/50">
+								On an iPhone you&apos;ll feel haptic feedback as you slide.
+							</p>
+						</div>
+
+						<div className="flex flex-col items-center rounded-3xl border border-white/10 bg-white/2 px-4 py-2 backdrop-blur">
+							<IOSSlider />
+							<ElasticSlider
+								label="Haptic slider"
+								min={0}
+								max={1}
+								step={0.1}
+								value={value}
+								onValueChange={setValue}
+								className="w-full h-10 max-w-md mt-4 mb-14"
+							/>
+							<SlideToUnlock
+								onUnlock={() => play()}
+								className="w-full max-w-md"
+							>
+								<SlideToUnlockTrack>
+									<SlideToUnlockText>
+										{({ isDragging }) => (
+											<ShimmeringText
+												text="slide to unlock"
+												isStopped={isDragging}
+											/>
+										)}
+									</SlideToUnlockText>
+									<SlideToUnlockHandle />
+								</SlideToUnlockTrack>
+							</SlideToUnlock>
+							<TimePicker />
+						</div>
+					</section>
+
 					<CodeBlock code={USAGE_CODE} language="tsx" wrap />
-					<div className="flex flex-col items-center justify-center gap-6 rounded-xl border border-dashed border-white/10 bg-black/30 p-6">
-						<button
-							type="button"
-							onClick={() => navigator.vibrate(200)}
-							className="rounded-xl bg-linear-to-b from-amber-300 to-orange-500 px-6 py-3 font-semibold text-black shadow-lg shadow-orange-500/25 transition-transform active:scale-95"
-						>
-							Vibrate
-						</button>
-						<input
-							type="range"
-							defaultValue={50}
-							onTouchMove={() => navigator.vibrate(50)}
-							onInput={() => navigator.vibrate(50)}
-							className="ios-range w-full max-w-xs"
-						/>
-					</div>
-				</section>
-
-				{/* Playground */}
-				<section className="py-12">
-					<div className="mb-10 text-center">
-						<h2 className="text-3xl font-bold tracking-tight">Playground</h2>
-						<p className="mt-2 text-white/50">
-							Real iOS-style components, all wired up to the haptics polyfill.
-						</p>
-					</div>
-
-					<div className="flex flex-col items-center gap-12 rounded-3xl border border-white/10 bg-white/2 px-6 py-16 backdrop-blur">
-						<IOSSlider />
-						<ElasticSlider
-							label="Opacity"
-							min={0}
-							max={1}
-							step={0.1}
-							value={value}
-							onValueChange={setValue}
-							className="w-full max-w-md"
-						/>
-						<SlideToUnlock onUnlock={() => play()}>
-							<SlideToUnlockTrack>
-								<SlideToUnlockText>
-									{({ isDragging }) => (
-										<ShimmeringText
-											text="slide to unlock"
-											isStopped={isDragging}
-										/>
-									)}
-								</SlideToUnlockText>
-								<SlideToUnlockHandle />
-							</SlideToUnlockTrack>
-						</SlideToUnlock>
-						<TimePicker />
-					</div>
-				</section>
+				</div>
 			</main>
 
 			<footer className="relative border-t border-white/5 py-10 text-center text-sm text-white/40">

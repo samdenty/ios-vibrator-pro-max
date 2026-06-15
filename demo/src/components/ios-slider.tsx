@@ -13,13 +13,13 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 const containerStyle: React.CSSProperties = {
-	width: 400,
+	width: "100%",
+	maxWidth: "28rem",
 	height: 300,
 	overflow: "hidden",
 	display: "flex",
 	alignItems: "center",
 	justifyContent: "center",
-	backdropFilter: "blur(2px)",
 };
 
 const trackStyle: React.CSSProperties = {

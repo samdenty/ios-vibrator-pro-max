@@ -126,6 +126,9 @@ export function ElasticSlider({
 	const animRef = useRef<ReturnType<typeof animate> | null>(null);
 	const wrapperRectRef = useRef<DOMRect | null>(null);
 	const scaleRef = useRef(1);
+	// Last raw (unrounded) pointer value, so haptics fire based on the finger's
+	// actual position crossing a hashmark rather than the snapped value.
+	const lastRawValueRef = useRef<number | null>(null);
 
 	const percentage = ((value - min) / (max - min)) * 100;
 	const isActive = isInteracting || isHovered;
@@ -175,6 +178,18 @@ export function ElasticSlider({
 		[min, max],
 	);
 
+	// Which hashmark segment a value falls into. Hashmarks sit at each step when
+	// there are few of them, otherwise at every 10% of the range — mirroring the
+	// rendering logic below so haptics fire exactly when a mark is crossed.
+	const hashMarkIndex = useCallback(
+		(v: number) => {
+			const discreteSteps = (max - min) / step;
+			const spacing = discreteSteps <= 10 ? step : (max - min) / 10;
+			return Math.floor((v - min) / spacing);
+		},
+		[min, max, step],
+	);
+
 	// Animate fill to a target percent, or jump instantly when the user prefers
 	// reduced motion. Position still updates — only the spring is skipped.
 	const animateFillTo = useCallback(
@@ -220,6 +235,7 @@ export function ElasticSlider({
 		(e.target as HTMLElement).setPointerCapture(e.pointerId);
 
 		pointerDownPos.current = { x: e.clientX, y: e.clientY };
+		lastRawValueRef.current = null;
 
 		isClickRef.current = true;
 
@@ -276,9 +292,17 @@ export function ElasticSlider({
 
 			const roundedValue = roundValue(newValue, step);
 
+			// Compare against the previous *raw* pointer position so vibration
+			// fires the instant the finger crosses a hashmark on screen, not when
+			// the snapped value happens to change.
+			const lastRaw = lastRawValueRef.current ?? newValue;
+			if (hashMarkIndex(newValue) !== hashMarkIndex(lastRaw)) {
+				navigator.vibrate(20);
+			}
+			lastRawValueRef.current = newValue;
+
 			if (roundedValue !== roundValue(value, step)) {
 				setValue(roundedValue);
-				navigator.vibrate(20);
 			}
 		},
 		[
@@ -292,6 +316,7 @@ export function ElasticSlider({
 			rubberStretch,
 			computeRubberStretch,
 			shouldReduceMotion,
+			hashMarkIndex,
 		],
 	);
 

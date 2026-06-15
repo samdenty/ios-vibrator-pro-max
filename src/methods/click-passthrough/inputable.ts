@@ -29,6 +29,7 @@ function handleInputRange(inputRange: HTMLInputElement) {
 	}
 
 	let lastValue = inputRange.value;
+	let lastInputValue = inputRange.value;
 	let preventChange = false;
 
 	const updateValue = (event: TouchEvent | MouseEvent) => {
@@ -50,8 +51,13 @@ function handleInputRange(inputRange: HTMLInputElement) {
 		inputRange.value = `${inputRange.step === "any" ? newValue : Math.round(newValue / step) * step}`;
 
 		if (lastValue !== inputRange.value && isClickEvent) {
+			lastInputValue = inputRange.value;
 			lastValue = inputRange.value;
+
 			inputRange.dispatchEvent(new Event("change"));
+		} else if (lastInputValue !== inputRange.value && !isClickEvent) {
+			lastInputValue = inputRange.value;
+			inputRange.dispatchEvent(new Event("input"));
 		}
 
 		updateStyles();
@@ -68,6 +74,7 @@ function handleInputRange(inputRange: HTMLInputElement) {
 			return;
 		}
 
+		lastInputValue = inputRange.value;
 		lastValue = inputRange.value;
 		updateStyles();
 	};

@@ -268,21 +268,22 @@ export function TimePicker({ initialValue, onChange }: TimePickerProps) {
 
 	return (
 		<div
-			className="relative mx-auto flex w-[min(92vw,550px)] items-center justify-center overflow-hidden rounded-[34px]"
+			className="relative flex w-full max-w-md items-center justify-center overflow-hidden rounded-[34px]"
 			style={{ height: WHEEL_HEIGHT }}
 		>
 			<div
-				className="pointer-events-none absolute left-0 right-0 top-1/2 z-0 -translate-y-1/2 rounded-[31px] bg-[#171719]"
+				className="pointer-events-none absolute left-0 right-0 top-1/2 z-0 -translate-y-1/2 rounded-[31px] bg-white/8"
 				style={{ height: PILL_HEIGHT }}
 			/>
 			<div
-				className="pointer-events-none absolute inset-0 z-20"
+				className="relative z-10 flex h-full w-full items-center justify-between px-2"
 				style={{
-					background:
-						"linear-gradient(to bottom, #000 0%, rgba(0,0,0,0) 7%, rgba(0,0,0,0) 93%, #000 100%)",
+					WebkitMaskImage:
+						"linear-gradient(to bottom, transparent 0%, #000 14%, #000 86%, transparent 100%)",
+					maskImage:
+						"linear-gradient(to bottom, transparent 0%, #000 14%, #000 86%, transparent 100%)",
 				}}
-			/>
-			<div className="relative z-10 flex h-full w-full items-center justify-between px-2">
+			>
 				{columns.map((column) => (
 					<WheelColumn
 						ariaLabel={column.ariaLabel}
