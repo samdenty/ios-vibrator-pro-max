@@ -1,6 +1,6 @@
 {
 	"name": "ios-vibrator-pro-max",
-	"version": "2.0.2",
+	"version": "3.0.0",
 	"description": "Bringing the vibrate API for the first time to the web on iOS 18 Safari",
 	"homepage": "https://vibrator.dev/",
 	"type": "module",
@@ -19,7 +19,7 @@
 		"prepublishOnly": "pnpm build"
 	},
 	"keywords": [],
-	"author": "Sam Denty <samddenty@gmail.com> (http://samdenty.com/)",
+	"author": "Sam Denty <samddenty@gmail.com> (https://samdenty.io/)",
 	"license": "ISC",
 	"devDependencies": {
 		"vite": "^6.1.1",
