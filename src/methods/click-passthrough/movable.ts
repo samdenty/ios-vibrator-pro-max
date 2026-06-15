@@ -83,23 +83,7 @@ export function handleMovable(element: HTMLElement) {
 
 	const onPointerUp = () => {
 		if (!pointerMove && pointerDown) {
-			trigger.simulateClick(
-				clonePointerEvent("click", {
-					altKey: pointerDown.altKey,
-					cancelable: pointerDown.cancelable,
-					ctrlKey: pointerDown.ctrlKey,
-					metaKey: pointerDown.metaKey,
-					shiftKey: pointerDown.shiftKey,
-					view: pointerDown.view,
-					detail: pointerDown.detail,
-					which: pointerDown.which,
-					composed: pointerDown.composed,
-					clientX: pointerDown.clientX,
-					clientY: pointerDown.clientY,
-					screenX: pointerDown.screenX,
-					screenY: pointerDown.screenY,
-				}),
-			);
+			trigger.simulateClick(clonePointerEvent("click", pointerDown));
 
 			if (!shouldVibrate()) {
 				trigger.input.disabled = true;
