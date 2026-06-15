@@ -135,11 +135,7 @@ export function handleMovable(element: HTMLElement) {
 				"all: revert",
 				"width: 100%",
 				"height: 100%",
-				"position: absolute",
-				"top: 50%",
-				"left: 50%",
 				"touch-action: none",
-				"transform: translate(-50%, -50%)",
 			];
 		},
 	);

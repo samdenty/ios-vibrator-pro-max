@@ -134,7 +134,9 @@ function handleInputRange(inputRange: HTMLInputElement) {
 			return [
 				"all: revert",
 				"position: absolute",
+				"top: 50%",
 				`left: ${left}`,
+				"transform: translateY(-50%)",
 				`width: ${width}px`,
 				`height: ${height}px`,
 				`border-radius: ${borderRadius}`,
