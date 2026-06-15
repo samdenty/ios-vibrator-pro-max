@@ -1,6 +1,6 @@
 {
 	"name": "ios-vibrator-pro-max",
-	"version": "3.0.0",
+	"version": "3.0.1",
 	"description": "Bringing the vibrate API for the first time to the web on iOS 18 Safari",
 	"homepage": "https://vibrator.dev/",
 	"type": "module",
@@ -11,6 +11,12 @@
 		"type": "git",
 		"url": "https://github.com/samdenty/ios-vibrator-pro-max.git"
 	},
+	"funding": [
+		{
+			"type": "github",
+			"url": "https://github.com/sponsors/samdenty"
+		}
+	],
 	"scripts": {
 		"dev": "cd demo && pnpm dev",
 		"lint": "biome check",
