@@ -21,7 +21,7 @@
 		"dev": "cd demo && pnpm dev",
 		"lint": "biome check",
 		"lint:fix": "biome check --write",
-		"build": "rm -rf demo/dist dist; && tsc -b",
+		"build": "rm -rf demo/dist dist; tsc -b",
 		"prepublishOnly": "pnpm build"
 	},
 	"keywords": [],
