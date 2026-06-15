@@ -29,7 +29,7 @@ type TimeValue = {
 	seconds: number;
 };
 
-type TimerPickerProps = {
+type TimePickerProps = {
 	initialValue?: Partial<TimeValue>;
 	onChange?: (value: TimeValue) => void;
 };
@@ -176,7 +176,7 @@ function WheelColumn({
 
 		lastIndex.current = index;
 		setSelectedIndex(index);
-		navigator.vibrate?.(4);
+		navigator.vibrate?.(40);
 		onChange(values[index]);
 	});
 
@@ -251,7 +251,7 @@ function WheelColumn({
 	);
 }
 
-export function TimerPicker({ initialValue, onChange }: TimerPickerProps) {
+export function TimePicker({ initialValue, onChange }: TimePickerProps) {
 	const [time, setTime] = useState<TimeValue>({
 		hours: initialValue?.hours ?? 0,
 		minutes: initialValue?.minutes ?? 0,

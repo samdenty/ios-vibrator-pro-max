@@ -7,7 +7,7 @@ import {
 	authorizeVibrations,
 	setBackgroundVibration,
 } from "./methods";
-import { asyncWait, polyfillKind } from "./utils";
+import { asyncWait, polyfillKind, throttle } from "./utils";
 import { rootTrigger, setVibration, ignoredElements } from "./vibration";
 
 function polyfill(rawPatterns: Iterable<number> | VibratePattern): boolean {
@@ -66,7 +66,7 @@ async function initPolyfill() {
 	let raf: number | null = null;
 	let ignoreMutation = false;
 
-	const updateBodyStyles = () => {
+	const updateBodyStyles = throttle(() => {
 		raf = null;
 		ignoreMutation = true;
 
@@ -119,7 +119,7 @@ async function initPolyfill() {
 		setTimeout(() => {
 			ignoreMutation = false;
 		});
-	};
+	}, 250);
 
 	updateBodyStyles();
 

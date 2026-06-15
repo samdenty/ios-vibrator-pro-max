@@ -6,7 +6,7 @@ import {
 	rootTrigger,
 	shouldVibrate,
 } from "../../vibration";
-import { clonePointerEvent } from "./pointer";
+import { clonePointerEvent } from "./forward-events";
 import { isNativeMovableElement } from "./movable";
 
 export const triggersRoot =

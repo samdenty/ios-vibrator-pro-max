@@ -214,6 +214,9 @@ export function ElasticSlider({
 
 	const handlePointerDown = useCallback((e: React.PointerEvent) => {
 		e.preventDefault();
+
+		navigator.vibrate?.(20);
+
 		(e.target as HTMLElement).setPointerCapture(e.pointerId);
 
 		pointerDownPos.current = { x: e.clientX, y: e.clientY };

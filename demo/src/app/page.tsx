@@ -1,12 +1,24 @@
 "use client";
 
+import "ios-vibrator-pro-max/src";
 import { ElasticSlider } from "@/components/elastic-slider";
-import IOSSlider from "@/components/IOSSlider";
+import IOSSlider from "@/components/ios-slider";
 import { useState } from "react";
-import { TimerPicker } from "@/components/TimerPicker";
+import { TimePicker } from "@/components/time-picker";
+import { useSound } from "use-sound";
+import { ShimmeringText } from "@/components/shimmering-text";
+import {
+	SlideToUnlock,
+	SlideToUnlockHandle,
+	SlideToUnlockText,
+	SlideToUnlockTrack,
+} from "@/components/slide-to-unlock";
 
 export default function Home() {
 	const [value, setValue] = useState(0.5);
+	const [play] = useSound("/unlock.mp3", {
+		volume: 0.5,
+	});
 
 	return (
 		<main id="sandbox">
@@ -20,7 +32,21 @@ export default function Home() {
 				onValueChange={setValue}
 				className="w-full"
 			/>
-			<TimerPicker />
+			<SlideToUnlock
+				onUnlock={() => {
+					play();
+				}}
+			>
+				<SlideToUnlockTrack>
+					<SlideToUnlockText>
+						{({ isDragging }) => (
+							<ShimmeringText text="slide to unlock" isStopped={isDragging} />
+						)}
+					</SlideToUnlockText>
+					<SlideToUnlockHandle />
+				</SlideToUnlockTrack>
+			</SlideToUnlock>
+			<TimePicker />
 		</main>
 	);
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import "ios-vibrator-pro-max/src";
 import { useEffect, useRef, useState } from "react";
 import {
 	animate,

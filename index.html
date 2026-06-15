@@ -10,34 +10,17 @@
 
 <button style="anchor-name: --my-anchor">Press -> no vibration blocked by onclick</button>
 
-<label id="label" style="position-anchor: --my-anchor; position: fixed; left: anchor(left); top: anchor(top); bottom: anchor(bottom); right: anchor(right);">
-  <input id="input" type="checkbox" switch style="height: 100%; width: 100%;">
-</label>
 
-<br/>
-<br/>
+<div style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);">
+  <input id="input" type="checkbox" switch>
+  <div style="position: absolute; inset: 0;margin-top: 50px;touch-action: none;"></div>
+</div>
 
-<button style="anchor-name: --my-anchor2">Press -> vibration not blocked by onclick</button>
-
-<label style="position-anchor: --my-anchor2; position: fixed; left: anchor(left); top: anchor(top); bottom: anchor(bottom); right: anchor(right);">
-  <input type="checkbox" switch>
-</label><br/>
 
 
 
 <script type="module" async>
 
-// input.addEventListener('mouseover', (e) => {
-// e.preventDefault();
-// })
-input.addEventListener('click', () => {
-  label.disabled= true;
-  input.disabled=  true;
-
-  // setTimeout(() => {
-  //   input.setAttribute('type', 'checkbox');
-  // });
-});
 
 
 </script>

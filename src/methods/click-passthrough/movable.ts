@@ -3,7 +3,7 @@ import { registerStyleUpdater } from "../../utils";
 import { shouldVibrate } from "../../vibration";
 import { clickableTriggers } from "./clickable";
 import { isInputRangeElement } from "./inputable";
-import { clonePointerEvent } from "./pointer";
+import { clonePointerEvent } from "./forward-events";
 
 export function isNativeMovableElement(element: HTMLElement) {
 	const tagName = element.tagName.toLowerCase();
@@ -44,9 +44,7 @@ export function handleMovable(element: HTMLElement) {
 	let x = 0;
 	let y = 0;
 
-	let angleDeg360 = 0;
-
-	let flipDirection = false;
+	let flippedDirection = false;
 
 	function onTouchStart(event: TouchEvent) {
 		const { pageX, pageY } = event.touches[0];
@@ -67,19 +65,10 @@ export function handleMovable(element: HTMLElement) {
 	const onTouchMove = (event: TouchEvent) => {
 		const { pageX, pageY } = event.touches[0];
 
-		const deltaX = pageX - x;
-		const deltaY = pageY - y;
-
-		const angleDeg = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-
-		angleDeg360 = ((angleDeg % 360) + 360) % 360;
 		touchMove = true;
-		flipDirection = !flipDirection;
-
-		if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) > 3) {
-			x = pageX;
-			y = pageY;
-		}
+		flippedDirection = !flippedDirection;
+		x = pageX;
+		y = pageY;
 
 		updateClipStyles();
 	};
@@ -156,7 +145,7 @@ export function handleMovable(element: HTMLElement) {
 		() => {
 			const opacity = debugMode ? 0.4 : 0;
 
-			if (!touchStart) {
+			if (!touchMove || !touchStart) {
 				const computedStyle = getComputedStyle(element);
 				if (isInputRange) {
 					return [
@@ -176,14 +165,20 @@ export function handleMovable(element: HTMLElement) {
 				];
 			}
 
-			const scale = 1;
+			const scale = 0.2;
 			const height = 31 * scale;
 			const width = 70 * scale;
 
-			const vibrate = shouldVibrate();
+			const top = startY - height / 2;
+			const left = startX - width / 2;
 
-			const top = (vibrate ? startY : y) - height / 2;
-			const left = (vibrate ? startX : x) - width / 2;
+			const deltaX = x - startX;
+			const deltaY = y - startY;
+
+			const angleDeg = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+			const angleDeg360 = ((angleDeg % 360) + 360) % 360;
+
+			const vibrate = shouldVibrate();
 
 			return [
 				"all: unset",
@@ -193,8 +188,8 @@ export function handleMovable(element: HTMLElement) {
 				`width: ${width}px`,
 				"top: 0",
 				"left: 0",
-				`direction: ${vibrate && flipDirection ? "rtl" : "ltr"}`,
-				`transform: translate(${left}px, ${top}px) rotate(${angleDeg360}deg) ${vibrate ? "" : "translateX(100px)"}`,
+				`direction: ${!vibrate || flippedDirection ? "rtl" : "ltr"}`,
+				`transform: translate(${left}px, ${top}px) rotate(${angleDeg360}deg)`,
 				`opacity: ${opacity}`,
 			];
 		},

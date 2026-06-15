@@ -1,8 +1,7 @@
 import { handleClickable } from "./clickable";
 import { ignoredElements, rootTrigger } from "../../vibration";
-import { handleTouchEvents } from "./touch";
 import { handleInputable } from "./inputable";
-import { handlePointerEvents } from "./pointer";
+import { forwardEvents } from "./forward-events";
 import { handleMovable } from "./movable";
 import { updateStyles } from "../../utils";
 
@@ -42,8 +41,7 @@ export function handleAddElement(
 	const disposers = [
 		handleClickable(element),
 		handleInputable(element),
-		handleTouchEvents(element),
-		handlePointerEvents(element),
+		forwardEvents(element),
 		handleMovable(element),
 	];
 
