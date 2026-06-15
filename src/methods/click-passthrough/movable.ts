@@ -165,20 +165,20 @@ export function handleMovable(element: HTMLElement) {
 				];
 			}
 
-			const scale = 0.2;
+			const scale = 0.5;
 			const height = 31 * scale;
 			const width = 70 * scale;
 
-			const top = startY - height / 2;
-			const left = startX - width / 2;
+			const vibrate = shouldVibrate();
+
+			const top = (vibrate ? startY : y) - height / 2;
+			const left = (vibrate ? startX : x) - width / 2;
 
 			const deltaX = x - startX;
 			const deltaY = y - startY;
 
 			const angleDeg = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
 			const angleDeg360 = ((angleDeg % 360) + 360) % 360;
-
-			const vibrate = shouldVibrate();
 
 			return [
 				"all: unset",
@@ -189,7 +189,7 @@ export function handleMovable(element: HTMLElement) {
 				"top: 0",
 				"left: 0",
 				`direction: ${!vibrate || flippedDirection ? "rtl" : "ltr"}`,
-				`transform: translate(${left}px, ${top}px) rotate(${angleDeg360}deg)`,
+				`transform: translate(${left - window.scrollX}px, ${top - window.scrollY}px) rotate(${angleDeg360}deg) translateX(${vibrate ? 0 : 50}px)`,
 				`opacity: ${opacity}`,
 			];
 		},

@@ -196,7 +196,7 @@ export function handleClickable(element: HTMLElement, force = false) {
 
 			return [
 				"all: unset",
-				"position: fixed",
+				"position: absolute",
 				"z-index: 2147483647",
 				"top: anchor(top)",
 				"left: anchor(left)",
